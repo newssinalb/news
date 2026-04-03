@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://erzydvivbvrhixtqihhg.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_UQZUeSY7cI15Dxf1BE8sEA_0GcVGp78';
 
 // Eğer Supabase ayarları yapılmadıysa uygulamanın çökmesini engellemek için kontrol
 export const supabase = supabaseUrl && supabaseKey 
