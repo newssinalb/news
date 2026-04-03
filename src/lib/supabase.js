@@ -61,3 +61,40 @@ export async function addPost(post) {
   }
   return data;
 }
+
+// Haberi güncelle
+export async function updatePost(id, updates) {
+  if (!supabase) {
+    throw new Error('Supabase URL veya Anon Key eksik. Lütfen .env.local dosyasını ayarlayın.');
+  }
+
+  const { data, error } = await supabase
+    .from('posts')
+    .update(updates)
+    .eq('id', id)
+    .select();
+
+  if (error) {
+    console.error(`Post güncellenirken hata oluştu (${id}):`, JSON.stringify(error, null, 2));
+    throw error;
+  }
+  return data;
+}
+
+// Haberi sil
+export async function deletePost(id) {
+  if (!supabase) {
+    throw new Error('Supabase URL veya Anon Key eksik. Lütfen .env.local dosyasını ayarlayın.');
+  }
+
+  const { data, error } = await supabase
+    .from('posts')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error(`Post silinirken hata oluştu (${id}):`, JSON.stringify(error, null, 2));
+    throw error;
+  }
+  return data;
+}

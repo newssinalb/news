@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { addPost } from '@/lib/supabase';
+import { useState, useEffect } from 'react';
+import { addPost, getPosts, getPostById, updatePost, deletePost } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
 const SCITELY_API_KEY = 'sk-scitely-d49a34aea733305726cc6dc537e0342f988f35867ca57e5025836a5d0642c066';
@@ -59,13 +59,28 @@ export default function AdminPage() {
   const [isBreaking, setIsBreaking]   = useState(false);
   const [loading, setLoading]     = useState(false);
 
+  const [posts, setPosts] = useState([]);
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [fetchingPosts, setFetchingPosts] = useState(true);
+
   const [titleLoading, setTitleLoading]     = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [contentLoading, setContentLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
   const [aiError, setAiError]               = useState('');
 
   const router = useRouter();
   const SECTIONS = ['Aktualitet', 'Edi Rama', 'Politikë', 'Bota', 'Showbiz', 'Sport', 'Ekonomi', 'Kronikë', 'Teknologji', 'Të Tjera'];
+
+  useEffect(() => {
+    async function loadPosts() {
+      setFetchingPosts(true);
+      const data = await getPosts();
+      setPosts(data || []);
+      setFetchingPosts(false);
+    }
+    loadPosts();
+  }, []);
 
   // ── AI Button 1: Generate a viral Albanian title (Fast) ───────────────────
   const handleGenerateTitle = async () => {
@@ -152,13 +167,85 @@ export default function AdminPage() {
     }
   };
 
+  // ── Image Upload ──────────────────────────────────────────────────────────
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageUploading(true);
+    setAiError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error('Gabim gjatë ngarkimit të fotografisë');
+      }
+
+      const data = await res.json();
+      setImageUrl(data.url);
+    } catch (err) {
+      setAiError('Fotografi: ' + err.message);
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  // ── Handlers for Edit and Delete ──────────────────────────────────────────
+  const handleEditClick = async (post) => {
+    try {
+       const fullPost = await getPostById(post.id);
+       if (fullPost) {
+         setEditingPostId(fullPost.id);
+         setTitle(fullPost.title || '');
+         setContent(fullPost.content || '');
+         setImageUrl(fullPost.image_url || '');
+         setSection(fullPost.section || 'Aktualitet');
+         setAuthor(fullPost.author || '');
+         setSummary(fullPost.summary || '');
+         // Format date for datetime-local input
+         const dateVal = fullPost.published_at ? new Date(fullPost.published_at).toISOString().slice(0, 16) : '';
+         setPublishedAt(dateVal);
+         setIsBreaking(fullPost.is_breaking || false);
+         window.scrollTo({ top: 0, behavior: 'smooth' });
+       }
+    } catch(err) {
+       console.error(err);
+       alert('Gabim gjatë marrjes së detajeve të lajmit');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPostId(null);
+    setTitle(''); setContent(''); setImageUrl('');
+    setSection('Aktualitet'); setAuthor(''); setSummary('');
+    setPublishedAt(''); setIsBreaking(false);
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Jeni të sigurt që doni ta fshini këtë lajm? Ky veprim nuk mund të kthehet mbrapsht!')) return;
+    try {
+      await deletePost(id);
+      setPosts(posts.filter(p => p.id !== id));
+      alert('Lajmi u fshi me sukses!');
+    } catch (err) {
+      alert('Gabim gjatë fshirjes: ' + err.message);
+    }
+  };
+
   // ── Form submit ───────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     const formattedPublishedAt = publishedAt ? new Date(publishedAt).toISOString() : undefined;
     try {
-      await addPost({
+      const payload = {
         title,
         content,
         image_url: imageUrl,
@@ -167,15 +254,24 @@ export default function AdminPage() {
         summary,
         published_at: formattedPublishedAt,
         is_breaking: isBreaking,
-      });
-      alert('Lajmi u publikua me sukses!');
-      setTitle(''); setContent(''); setImageUrl('');
-      setSection('Aktualitet'); setAuthor(''); setSummary('');
-      setPublishedAt(''); setIsBreaking(false);
-      router.push('/');
+      };
+
+      if (editingPostId) {
+        await updatePost(editingPostId, payload);
+        alert('Lajmi u përditësua me sukses!');
+      } else {
+        await addPost(payload);
+        alert('Lajmi u publikua me sukses!');
+      }
+      
+      handleCancelEdit(); // clears form
+      
+      const data = await getPosts();
+      setPosts(data || []);
+      
       router.refresh();
     } catch (error) {
-      alert('Gabim gjatë publikimit: ' + (error?.message || error?.details || JSON.stringify(error)));
+      alert('Gabim: ' + (error?.message || error?.details || JSON.stringify(error)));
       console.error(error);
     } finally {
       setLoading(false);
@@ -198,7 +294,7 @@ export default function AdminPage() {
         <div className="mb-8 flex items-center gap-3">
           <span className="w-1.5 h-8 bg-red-600 rounded-full inline-block" />
           <h1 className="text-2xl md:text-3xl font-black text-slate-800 uppercase tracking-wide">
-            Panel Admin — Shto Lajm
+            {editingPostId ? 'Panel Admin — Ndrysho Lajm' : 'Panel Admin — Shto Lajm'}
           </h1>
         </div>
 
@@ -358,14 +454,24 @@ export default function AdminPage() {
 
           {/* ── IMAGE URL ── */}
           <div>
-            <label className="block text-sm font-bold mb-2 text-slate-700">URL e Fotografisë</label>
-            <input
-              type="url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 placeholder-slate-400 text-sm"
-              placeholder="https://shembull.com/foto.jpg"
-            />
+            <label className="block text-sm font-bold mb-2 text-slate-700">Fotografia (Ngarko nga kompjuteri ose fut URL)</label>
+            <div className="flex flex-col gap-3">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={imageUploading}
+                className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer disabled:opacity-50"
+              />
+              <input
+                type="url"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                className="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 placeholder-slate-400 text-sm"
+                placeholder="Ose përdor një URL të gatshme..."
+              />
+            </div>
+            {imageUploading && <p className="text-sm font-semibold text-blue-600 mt-2 flex items-center gap-2"><Spinner /> Duke e ngarkuar foton në Cloudinary...</p>}
             {imageUrl && (
               <img
                 src={imageUrl}
@@ -378,21 +484,88 @@ export default function AdminPage() {
 
           <hr className="border-slate-200" />
 
-          {/* ── SUBMIT ── */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white font-bold text-base p-4 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <>
-                <Spinner />
-                <span>Duke publikuar…</span>
-              </>
-            ) : '📰 Publiko Lajmin'}
-          </button>
+          {/* ── SUBMIT & CANCEL ── */}
+          <div className="flex gap-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className={`flex-1 text-white font-bold text-base p-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg focus:outline-none focus:ring-4 flex items-center justify-center gap-2 ${editingPostId ? 'bg-orange-500 hover:bg-orange-600 focus:ring-orange-300' : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-300'}`}
+            >
+              {loading ? (
+                <>
+                  <Spinner />
+                  <span>Duke i dërguar…</span>
+                </>
+              ) : (editingPostId ? '✏️ Ruaj Ndryshimet' : '📰 Publiko Lajmin')}
+            </button>
+            
+            {editingPostId && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="px-6 py-4 rounded-xl font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors shadow-sm focus:outline-none"
+              >
+                Anulo
+              </button>
+            )}
+          </div>
 
         </form>
+
+        {/* ── EXISTING POSTS LIST ── */}
+        <div className="mt-12 bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+          <h2 className="text-xl font-black text-slate-800 uppercase tracking-wide mb-6">Lista e Lajmeve</h2>
+          
+          {fetchingPosts ? (
+            <div className="flex items-center gap-2 text-slate-500">
+              <Spinner /> Duke ngarkuar lajmet...
+            </div>
+          ) : posts.length === 0 ? (
+            <p className="text-slate-500">Nuk ka asnjë lajm të publikuar ende.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-slate-200 text-sm font-bold text-slate-600">
+                    <th className="py-3 px-2">Data</th>
+                    <th className="py-3 px-2">Titulli</th>
+                    <th className="py-3 px-2">Kategoria</th>
+                    <th className="py-3 px-2">Veprime</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  {posts.map(post => (
+                    <tr key={post.id} className="border-b border-slate-100 hover:bg-slate-50">
+                      <td className="py-3 px-2 text-slate-500 whitespace-nowrap">
+                        {new Date(post.created_at).toLocaleDateString('sq-AL')}
+                      </td>
+                      <td className="py-3 px-2 font-medium text-slate-800 max-w-xs truncate" title={post.title}>
+                        {post.is_breaking ? '🔥 ' : ''}{post.title}
+                      </td>
+                      <td className="py-3 px-2 text-slate-600">
+                        <span className="bg-slate-100 px-2 py-1 rounded text-xs">{post.section}</span>
+                      </td>
+                      <td className="py-3 px-2 whitespace-nowrap">
+                        <button
+                          onClick={() => handleEditClick(post)}
+                          className="mr-3 text-blue-600 font-bold hover:text-blue-800 transition-colors"
+                        >
+                          Ndrysho
+                        </button>
+                        <button
+                          onClick={() => handleDelete(post.id)}
+                          className="text-red-500 font-bold hover:text-red-700 transition-colors"
+                        >
+                          Fshi
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
