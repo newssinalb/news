@@ -365,20 +365,19 @@ export default function AdminPage() {
               <p className="text-xs text-slate-500 mt-1.5">Lër bosh për datën aktuale.</p>
             </div>
             <div
-              className="flex items-center h-[50px] px-4 border border-slate-300 rounded-lg bg-red-50 hover:bg-red-100 transition-colors cursor-pointer"
+              className={`flex items-center justify-between h-[50px] px-4 rounded-lg border transition-all cursor-pointer select-none ${isBreaking ? 'border-red-300 bg-red-50 shadow-sm' : 'border-slate-300 bg-slate-50 hover:bg-slate-100'}`}
               onClick={() => setIsBreaking(!isBreaking)}
             >
-              <input
-                id="is_breaking"
-                type="checkbox"
-                checked={isBreaking}
-                onChange={(e) => setIsBreaking(e.target.checked)}
-                className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500 cursor-pointer"
-                onClick={(e) => e.stopPropagation()}
-              />
-              <label htmlFor="is_breaking" className="ml-3 text-sm font-bold text-red-600 cursor-pointer select-none">
-                🔥 Shëno si Lajm i Fundit
-              </label>
+              <div className="flex items-center gap-3">
+                <span className={`text-sm font-bold ${isBreaking ? 'text-red-700' : 'text-slate-600'}`}>
+                  🔥 Shëno si Lajm i Fundit
+                </span>
+              </div>
+              
+              {/* Modern iOS-style Toggle Switch */}
+              <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ease-in-out ${isBreaking ? 'bg-red-500' : 'bg-slate-300'}`}>
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ease-in-out shadow-sm ${isBreaking ? 'translate-x-6' : 'translate-x-1'}`} />
+              </div>
             </div>
           </div>
 
