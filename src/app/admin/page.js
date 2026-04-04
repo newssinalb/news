@@ -58,6 +58,9 @@ export default function AdminPage() {
   const [publishedAt, setPublishedAt] = useState('');
   const [isBreaking, setIsBreaking]   = useState(false);
   const [loading, setLoading]     = useState(false);
+  // media_gallery: array of { type: 'image'|'video', url: string, caption: string }
+  const [mediaGallery, setMediaGallery] = useState([]);
+  const [galleryUploading, setGalleryUploading] = useState(false);
 
   const [posts, setPosts] = useState([]);
   const [editingPostId, setEditingPostId] = useState(null);
@@ -167,6 +170,47 @@ export default function AdminPage() {
     }
   };
 
+  // ── Gallery: add item by URL ─────────────────────────────────────────────
+  const handleAddGalleryUrl = (type) => {
+    const url = prompt(type === 'image' ? 'Fut URL-in e fotos:' : 'Fut URL-in e videos:');
+    if (!url || !url.trim()) return;
+    setMediaGallery(prev => [...prev, { type, url: url.trim(), caption: '' }]);
+  };
+
+  // ── Gallery: upload file ─────────────────────────────────────────────────
+  const handleGalleryFileUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setGalleryUploading(true);
+    setAiError('');
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        if (!res.ok) throw new Error('Gabim gjatë ngarkimit');
+        const data = await res.json();
+        const type = file.type.startsWith('video') ? 'video' : 'image';
+        setMediaGallery(prev => [...prev, { type, url: data.url, caption: '' }]);
+      }
+    } catch (err) {
+      setAiError('Galeri: ' + err.message);
+    } finally {
+      setGalleryUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  // ── Gallery: update caption ───────────────────────────────────────────────
+  const handleGalleryCaption = (index, value) => {
+    setMediaGallery(prev => prev.map((m, i) => i === index ? { ...m, caption: value } : m));
+  };
+
+  // ── Gallery: remove item ─────────────────────────────────────────────────
+  const handleGalleryRemove = (index) => {
+    setMediaGallery(prev => prev.filter((_, i) => i !== index));
+  };
+
   // ── Image Upload ──────────────────────────────────────────────────────────
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -213,6 +257,7 @@ export default function AdminPage() {
          const dateVal = fullPost.published_at ? new Date(fullPost.published_at).toISOString().slice(0, 16) : '';
          setPublishedAt(dateVal);
          setIsBreaking(fullPost.is_breaking || false);
+         setMediaGallery(Array.isArray(fullPost.media_gallery) ? fullPost.media_gallery : []);
          window.scrollTo({ top: 0, behavior: 'smooth' });
        }
     } catch(err) {
@@ -226,6 +271,7 @@ export default function AdminPage() {
     setTitle(''); setContent(''); setImageUrl('');
     setSection('Aktualitet'); setAuthor(''); setSummary('');
     setPublishedAt(''); setIsBreaking(false);
+    setMediaGallery([]);
   };
 
   const handleDelete = async (id) => {
@@ -254,6 +300,7 @@ export default function AdminPage() {
         summary,
         published_at: formattedPublishedAt,
         is_breaking: isBreaking,
+        media_gallery: mediaGallery.length > 0 ? mediaGallery : null,
       };
 
       if (editingPostId) {
@@ -478,6 +525,91 @@ export default function AdminPage() {
                 className="mt-3 rounded-lg max-h-48 object-cover w-full border border-slate-200"
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
+            )}
+          </div>
+
+          {/* ── GALERIA SHTESE (foto & video) ── */}
+          <div>
+            <label className="block text-sm font-bold mb-3 text-slate-700">📸 Foto &amp; Video shtesë (opsionale)</label>
+
+            {/* Upload buttons */}
+            <div className="flex flex-wrap gap-3 mb-4">
+              <label className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold cursor-pointer transition-colors border-2 border-dashed ${
+                galleryUploading ? 'opacity-50 cursor-not-allowed border-slate-300 text-slate-400' : 'border-blue-400 text-blue-600 hover:bg-blue-50'
+              }`}>
+                {galleryUploading ? <Spinner /> : '📁'}
+                {galleryUploading ? 'Duke ngarkuar…' : 'Ngarko Foto/Video'}
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  disabled={galleryUploading}
+                  onChange={handleGalleryFileUpload}
+                  className="hidden"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => handleAddGalleryUrl('image')}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold border-2 border-dashed border-green-400 text-green-600 hover:bg-green-50 transition-colors"
+              >
+                🌐 Foto me URL
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddGalleryUrl('video')}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold border-2 border-dashed border-purple-400 text-purple-600 hover:bg-purple-50 transition-colors"
+              >
+                🎬 Video me URL
+              </button>
+            </div>
+
+            {/* Gallery preview list */}
+            {mediaGallery.length > 0 && (
+              <div className="space-y-3">
+                {mediaGallery.map((item, idx) => (
+                  <div key={idx} className="flex gap-3 items-start bg-slate-50 rounded-xl p-3 border border-slate-200">
+                    {/* Thumbnail/icon */}
+                    <div className="flex-shrink-0">
+                      {item.type === 'image' ? (
+                        <img
+                          src={item.url}
+                          alt=""
+                          className="w-20 h-16 object-cover rounded-lg border border-slate-200"
+                          onError={e => { e.target.style.display='none'; }}
+                        />
+                      ) : (
+                        <div className="w-20 h-16 bg-slate-200 rounded-lg flex items-center justify-center text-2xl">🎬</div>
+                      )}
+                    </div>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-slate-500 uppercase mb-1">{item.type === 'image' ? 'Foto' : 'Video'}</p>
+                      <p className="text-xs text-slate-600 truncate mb-2">{item.url}</p>
+                      <input
+                        type="text"
+                        value={item.caption || ''}
+                        onChange={e => handleGalleryCaption(idx, e.target.value)}
+                        placeholder="Titulli / përshkrimi (opsional)…"
+                        className="w-full text-sm p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-slate-800 placeholder-slate-400"
+                      />
+                    </div>
+                    {/* Remove */}
+                    <button
+                      type="button"
+                      onClick={() => handleGalleryRemove(idx)}
+                      className="flex-shrink-0 mt-0.5 text-red-400 hover:text-red-600 transition-colors text-xl font-bold leading-none"
+                      title="Hiq"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {mediaGallery.length === 0 && (
+              <p className="text-slate-400 text-sm italic">Nuk ka media shtesë. Shto foto ose video me butonat më lart.</p>
             )}
           </div>
 

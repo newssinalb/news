@@ -15,9 +15,13 @@ export async function getPosts() {
     return [];
   }
 
+  // Only return posts created within the last 24 hours
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
   const { data, error } = await supabase
     .from('posts')
     .select('id, title, summary, image_url, author, section, is_breaking, created_at, published_at')
+    .gte('created_at', oneDayAgo)
     .order('created_at', { ascending: false });
 
   if (error) {

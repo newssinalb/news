@@ -24,7 +24,7 @@ export async function POST(request) {
     // Upload to Cloudinary using a stream
     const uploadResult = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { folder: 'news_uploads' }, // Folder in Cloudinary
+        { folder: 'news_uploads', resource_type: 'auto' }, // auto = images + videos
         (error, result) => {
           if (error) reject(error);
           else resolve(result);

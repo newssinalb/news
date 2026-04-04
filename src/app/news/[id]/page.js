@@ -50,7 +50,7 @@ export default async function NewsArticlePage(props) {
         {post.is_breaking && (
           <span className="text-red-600 text-[11px] font-bold uppercase flex items-center gap-1.5 bg-red-50 px-2 py-1 rounded">
             <span className="animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)] h-2 w-2 bg-red-600 rounded-full inline-block"></span>
-            SON DAKİKA
+            LAJMI FUNDIT
           </span>
         )}
       </div>
@@ -107,6 +107,66 @@ export default async function NewsArticlePage(props) {
             );
         })}
       </article>
+
+      {/* ── Media Gallery (extra photos & videos) ── */}
+      {Array.isArray(post.media_gallery) && post.media_gallery.length > 0 && (
+        <section className="mt-12 pt-8 border-t border-gray-200">
+          <h2 className="text-xl font-black text-slate-900 mb-6 uppercase tracking-wider flex items-center gap-2">
+            <span className="w-2 h-6 bg-red-600 inline-block"></span>
+            Foto &amp; Video
+          </h2>
+
+          {/* Photos */}
+          {post.media_gallery.some(m => m.type === 'image') && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              {post.media_gallery
+                .filter(m => m.type === 'image')
+                .map((m, i) => (
+                  <figure
+                    key={i}
+                    className="group relative overflow-hidden rounded-md shadow-sm border border-gray-100"
+                  >
+                    <img
+                      src={m.url}
+                      alt={m.caption || `Foto ${i + 1}`}
+                      className="w-full h-auto max-h-[420px] object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                    {m.caption && (
+                      <figcaption className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs px-3 py-1.5">
+                        {m.caption}
+                      </figcaption>
+                    )}
+                  </figure>
+                ))
+              }
+            </div>
+          )}
+
+          {/* Videos */}
+          {post.media_gallery.some(m => m.type === 'video') && (
+            <div className="flex flex-col gap-5">
+              {post.media_gallery
+                .filter(m => m.type === 'video')
+                .map((m, i) => (
+                  <figure key={i} className="rounded-md overflow-hidden shadow-sm border border-gray-100">
+                    <video
+                      src={m.url}
+                      controls
+                      className="w-full max-h-[520px] bg-black"
+                      preload="metadata"
+                    />
+                    {m.caption && (
+                      <figcaption className="text-xs text-slate-500 mt-1 px-1">
+                        {m.caption}
+                      </figcaption>
+                    )}
+                  </figure>
+                ))
+              }
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Related Articles Section */}
       {relatedPosts.length > 0 && (
