@@ -60,8 +60,9 @@ export async function addPost(post) {
     .select();
 
   if (error) {
-    console.error('Haber eklenirken hata oluştu:', JSON.stringify(error, null, 2));
-    throw error;
+    const msg = error.message || error.details || error.code || JSON.stringify(error);
+    console.error('Gabim gjatë shtimit të lajmit:', msg, error);
+    throw new Error(msg);
   }
   return data;
 }
@@ -79,8 +80,9 @@ export async function updatePost(id, updates) {
     .select();
 
   if (error) {
-    console.error(`Post güncellenirken hata oluştu (${id}):`, JSON.stringify(error, null, 2));
-    throw error;
+    const msg = error.message || error.details || error.code || JSON.stringify(error);
+    console.error(`Gabim gjatë përditësimit (${id}):`, msg, error);
+    throw new Error(msg);
   }
   return data;
 }
@@ -97,8 +99,9 @@ export async function deletePost(id) {
     .eq('id', id);
 
   if (error) {
-    console.error(`Post silinirken hata oluştu (${id}):`, JSON.stringify(error, null, 2));
-    throw error;
+    const msg = error.message || error.details || error.code || JSON.stringify(error);
+    console.error(`Gabim gjatë fshirjes (${id}):`, msg, error);
+    throw new Error(msg);
   }
   return data;
 }
