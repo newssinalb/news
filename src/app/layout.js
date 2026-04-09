@@ -61,7 +61,7 @@ export default function RootLayout({ children }) {
           })()
         ` }} />
       </head>
-      <body className="min-h-full flex flex-col bg-white overflow-x-hidden relative">
+      <body className="min-h-full flex flex-col bg-white overflow-x-hidden relative" suppressHydrationWarning>
         <Header />
         <div className="flex-1 flex flex-col">
           {children}

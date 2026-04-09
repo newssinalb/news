@@ -1,23 +1,57 @@
 @import "tailwindcss";
 
-/* ── Light mode tokens ───────────────────────────── */
+/* Enable class-based dark mode for dark: utilities */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Light mode tokens ──────────────────────────── */
 :root {
   --background: #ffffff;
   --foreground: #0f172a;
-  --surface:    #f8fafc;
-  --border:     #e2e8f0;
-  --muted:      #64748b;
-  --accent:     #dc2626;
 }
 
-/* ── Dark mode tokens ────────────────────────────── */
-.dark {
+/* ── Dark mode: override EVERY Tailwind color variable ────────────
+   Tailwind v4 generates utilities as var(--color-*), so overriding
+   these here changes ALL components without touching any component.
+──────────────────────────────────────────────────────────────────── */
+html.dark {
+  color-scheme: dark;
+
+  /* Whites → dark card */
+  --color-white:      #1e293b;
+
+  /* Slate scale — inverted for dark mode */
+  --color-slate-50:   #1e293b;
+  --color-slate-100:  #334155;
+  --color-slate-200:  #475569;
+  --color-slate-300:  #64748b;
+  --color-slate-400:  #94a3b8;
+  --color-slate-500:  #94a3b8;
+  --color-slate-600:  #cbd5e1;
+  --color-slate-700:  #e2e8f0;
+  --color-slate-800:  #f1f5f9;
+  --color-slate-900:  #f8fafc;
+  --color-slate-950:  #f8fafc;
+
+  /* Gray scale — also inverted (ArticleCard uses gray-*) */
+  --color-gray-50:    #1e293b;
+  --color-gray-100:   #334155;
+  --color-gray-200:   #475569;
+  --color-gray-300:   #64748b;
+  --color-gray-400:   #94a3b8;
+  --color-gray-500:   #94a3b8;
+  --color-gray-600:   #cbd5e1;
+  --color-gray-700:   #e2e8f0;
+  --color-gray-800:   #f1f5f9;
+  --color-gray-900:   #f1f5f9;
+  --color-gray-950:   #f8fafc;
+
+  /* Keep red vivid */
+  --color-red-50:    #450a0a;
+  --color-red-100:   #7f1d1d;
+
+  /* Page tokens */
   --background: #0f172a;
   --foreground: #f1f5f9;
-  --surface:    #1e293b;
-  --border:     #334155;
-  --muted:      #94a3b8;
-  --accent:     #ef4444;
 }
 
 @theme inline {
@@ -27,65 +61,149 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* ── Base ──────────────────────────────────────────── */
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* ── Dark mode — global overrides ────────────────── */
-.dark body {
-  background: var(--background);
-  color: var(--foreground);
+/* ── Structural fallbacks (for gradient/explicit bg) ── */
+html.dark body {
+  background-color: #0f172a;
+  color: #f1f5f9;
 }
 
-/* Backgrounds */
-.dark .bg-white         { background-color: #1e293b !important; }
-.dark .bg-slate-50      { background-color: #1e293b !important; }
-.dark .bg-slate-100     { background-color: #334155 !important; }
+/* The minimum-height page wrappers on every page use bg-white */
+html.dark .min-h-screen {
+  background-color: #0f172a;
+}
 
-/* Text */
-.dark .text-slate-900   { color: #f1f5f9 !important; }
-.dark .text-slate-800   { color: #e2e8f0 !important; }
-.dark .text-slate-700   { color: #cbd5e1 !important; }
-.dark .text-slate-600   { color: #94a3b8 !important; }
-.dark .text-slate-500   { color: #64748b !important; }
-
-/* Borders */
-.dark .border-slate-100 { border-color: #334155 !important; }
-.dark .border-slate-200 { border-color: #334155 !important; }
-.dark .border-gray-100  { border-color: #334155 !important; }
-.dark .border-gray-200  { border-color: #475569 !important; }
-
-/* Article page */
-.dark article p         { color: #cbd5e1 !important; }
-.dark #article-content  { color: #cbd5e1; }
-
-/* Header */
-.dark header {
+/* Header gets its own dark treatment */
+html.dark header {
   background-color: #0f172a !important;
   border-color: #1e293b !important;
 }
-.dark header.bg-white\/95 {
-  background-color: rgba(15,23,42,0.96) !important;
+html.dark header.bg-white\/95,
+html.dark header[class*="bg-white"] {
+  background-color: rgba(15, 23, 42, 0.97) !important;
 }
 
-/* Cards */
-.dark .hover\:bg-slate-50:hover { background-color: #1e293b !important; }
-.dark .hover\:shadow-xl:hover    { box-shadow: 0 20px 40px rgba(0,0,0,0.4) !important; }
+/* Top bar */
+html.dark .bg-\[\#0f172a\] { background-color: #020617 !important; }
 
-/* Comments & Forms */
-.dark input:not([type="file"]), 
-.dark textarea, 
-.dark select {
+/* Gradient backgrounds used in admin / hero — invert to dark */
+html.dark .bg-gradient-to-br {
+  background-image: linear-gradient(to bottom right, #0f172a, #1e293b) !important;
+}
+
+/* Sidebar / aside */
+html.dark aside { background-color: #0f172a; }
+
+/* Article text */
+html.dark article p,
+html.dark #article-content { color: #cbd5e1; }
+html.dark article h1,
+html.dark article h2,
+html.dark article h3 { color: #f1f5f9; }
+
+/* Borders */
+html.dark .divide-slate-100 > * { border-color: #334155; }
+
+/* Tags / badges that use bg-slate-100 */
+html.dark .bg-slate-100   { background-color: #334155 !important; }
+html.dark .bg-slate-50    { background-color: #1e293b !important; }
+
+/* Forms */
+html.dark input:not([type="file"]),
+html.dark textarea,
+html.dark select {
   background-color: #1e293b !important;
   border-color: #475569 !important;
   color: #e2e8f0 !important;
 }
-.dark input::placeholder,
-.dark textarea::placeholder {
+html.dark input::placeholder,
+html.dark textarea::placeholder {
   color: #64748b !important;
 }
 
-/* Reading progress bar — keep red in dark */
+/* Footer */
+html.dark footer {
+  background-color: #020617;
+  border-color: #1e293b;
+}
+
+/* Admin panel cards */
+html.dark .rounded-2xl,
+html.dark .rounded-xl {
+  border-color: #334155;
+}
+
+/* ── Article card overrides (uses gray-* classes) ── */
+/* Card wrapper backgrounds */
+html.dark .bg-gray-50,
+html.dark [class*="bg-gray-50"] {
+  background-color: #1e293b !important;
+}
+html.dark .hover\:bg-gray-50:hover {
+  background-color: #334155 !important;
+}
+
+/* Card text: titles */
+html.dark .text-gray-900,
+html.dark [class*="text-gray-900"] {
+  color: #f1f5f9 !important;
+}
+
+/* Card text: summaries */
+html.dark .text-gray-500,
+html.dark [class*="text-gray-500"] {
+  color: #94a3b8 !important;
+}
+
+/* Card text: timestamps */
+html.dark .text-gray-400,
+html.dark [class*="text-gray-400"] {
+  color: #64748b !important;
+}
+
+/* Category Grid section dividers */
+html.dark [class*="border-gray-"] {
+  border-color: #334155 !important;
+}
+
+/* Card hover: white bg on hover in dark should be a lighter dark */
+html.dark .hover\:bg-white:hover {
+  background-color: #334155 !important;
+}
+html.dark .hover\:shadow-xl:hover {
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5) !important;
+}
+
+/* Homepage root */
+html.dark .bg-white.min-h-screen {
+  background-color: #0f172a !important;
+}
+
+/* CategoryGrid "Shiko të gjitha" link */
+html.dark a[class*="text-gray-"] {
+  color: #94a3b8 !important;
+}
+
+/* ── bg-slate-50/50 opacity variant used in CategoryGrid card wrappers ── */
+html.dark [class*="bg-slate-50\/"] {
+  background-color: #1e293b !important;
+}
+
+/* CategoryGrid card borders */
+html.dark [class*="border-slate-100"] {
+  border-color: #334155 !important;
+}
+
+/* CategoryGrid title text */
+html.dark [class*="text-slate-800"] {
+  color: #e2e8f0 !important;
+}
+
+
