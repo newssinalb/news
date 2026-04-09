@@ -46,6 +46,20 @@ export default function RootLayout({ children }) {
       lang="sq"
       className={`${geistSans.variable} h-full antialiased`}
     >
+      <head>
+        {/* RSS feed auto-discovery */}
+        <link rel="alternate" type="application/rss+xml" title="Rilindje News RSS" href="/feed.xml" />
+        {/* Prevent dark mode flash on page load */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            try {
+              var t = localStorage.getItem('theme');
+              var d = t ? t === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+              if (d) document.documentElement.classList.add('dark');
+            } catch(e){}
+          })()
+        ` }} />
+      </head>
       <body className="min-h-full flex flex-col bg-white overflow-x-hidden relative">
         <Header />
         <div className="flex-1 flex flex-col">

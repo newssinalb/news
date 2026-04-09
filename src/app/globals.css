@@ -1,8 +1,23 @@
 @import "tailwindcss";
 
+/* ── Light mode tokens ───────────────────────────── */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
+  --surface:    #f8fafc;
+  --border:     #e2e8f0;
+  --muted:      #64748b;
+  --accent:     #dc2626;
+}
+
+/* ── Dark mode tokens ────────────────────────────── */
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --surface:    #1e293b;
+  --border:     #334155;
+  --muted:      #94a3b8;
+  --accent:     #ef4444;
 }
 
 @theme inline {
@@ -12,15 +27,65 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
+
+/* ── Dark mode — global overrides ────────────────── */
+.dark body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Backgrounds */
+.dark .bg-white         { background-color: #1e293b !important; }
+.dark .bg-slate-50      { background-color: #1e293b !important; }
+.dark .bg-slate-100     { background-color: #334155 !important; }
+
+/* Text */
+.dark .text-slate-900   { color: #f1f5f9 !important; }
+.dark .text-slate-800   { color: #e2e8f0 !important; }
+.dark .text-slate-700   { color: #cbd5e1 !important; }
+.dark .text-slate-600   { color: #94a3b8 !important; }
+.dark .text-slate-500   { color: #64748b !important; }
+
+/* Borders */
+.dark .border-slate-100 { border-color: #334155 !important; }
+.dark .border-slate-200 { border-color: #334155 !important; }
+.dark .border-gray-100  { border-color: #334155 !important; }
+.dark .border-gray-200  { border-color: #475569 !important; }
+
+/* Article page */
+.dark article p         { color: #cbd5e1 !important; }
+.dark #article-content  { color: #cbd5e1; }
+
+/* Header */
+.dark header {
+  background-color: #0f172a !important;
+  border-color: #1e293b !important;
+}
+.dark header.bg-white\/95 {
+  background-color: rgba(15,23,42,0.96) !important;
+}
+
+/* Cards */
+.dark .hover\:bg-slate-50:hover { background-color: #1e293b !important; }
+.dark .hover\:shadow-xl:hover    { box-shadow: 0 20px 40px rgba(0,0,0,0.4) !important; }
+
+/* Comments & Forms */
+.dark input:not([type="file"]), 
+.dark textarea, 
+.dark select {
+  background-color: #1e293b !important;
+  border-color: #475569 !important;
+  color: #e2e8f0 !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Reading progress bar — keep red in dark */

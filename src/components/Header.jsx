@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import SearchOverlay from './SearchOverlay';
+import DarkModeToggle from './DarkModeToggle';
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -93,16 +94,18 @@ export default function Header() {
             </h1>
           </Link>
 
-          {/* Search overlay trigger — desktop */}
-          <div className="hidden lg:block">
+          {/* Search + Dark mode — desktop */}
+          <div className="hidden lg:flex items-center gap-2">
             <SearchOverlay />
+            <DarkModeToggle />
           </div>
 
-          {/* Hamburger Menu Toggle Button */}
-          <div className="flex items-center gap-3 lg:hidden">
+          {/* Search + Dark mode + Hamburger — mobile */}
+          <div className="flex items-center gap-2 lg:hidden">
             <SearchOverlay />
+            <DarkModeToggle />
             <button 
-              className="p-2 -mr-2 text-slate-800 hover:text-red-600 focus:outline-none transition-colors z-[60]"
+              className="p-2 -mr-2 text-slate-800 dark:text-slate-200 hover:text-red-600 focus:outline-none transition-colors z-[60]"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle menu"
             >

@@ -66,12 +66,18 @@ export default function AdminPage() {
   const [posts, setPosts] = useState([]);
   const [editingPostId, setEditingPostId] = useState(null);
   const [fetchingPosts, setFetchingPosts] = useState(true);
+  const [viewCounts, setViewCounts] = useState({}); // { [postId]: count }
 
   // Live TV state
   const [liveChannels, setLiveChannels] = useState([]);
   const [liveLoading, setLiveLoading] = useState(true);
   const [newChannel, setNewChannel] = useState({ name: '', youtube_url: '', sort_order: 0 });
   const [addingChannel, setAddingChannel] = useState(false);
+
+  // Comment moderation state
+  const [comments, setComments]             = useState([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentsLoaded, setCommentsLoaded]   = useState(false);
 
   const [titleLoading, setTitleLoading]     = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
@@ -87,13 +93,52 @@ export default function AdminPage() {
       setFetchingPosts(true);
       setLiveLoading(true);
       const [postsData, channelsData] = await Promise.all([getPosts(), getLiveChannels()]);
-      setPosts(postsData || []);
+      const fetchedPosts = postsData || [];
+      setPosts(fetchedPosts);
       setLiveChannels(channelsData || []);
       setFetchingPosts(false);
       setLiveLoading(false);
+
+      // Fetch view counts for all posts in parallel (batched)
+      if (fetchedPosts.length > 0) {
+        try {
+          const stats = await fetch('/api/views/stats').then(r => r.json());
+          // Build a map from top posts data
+          const map = {};
+          (stats.topPosts || []).forEach(p => { map[p.id] = p.views; });
+          setViewCounts(map);
+        } catch { /* ignore */ }
+      }
     }
     loadData();
   }, []);
+
+  // Load comments on demand
+  async function loadComments() {
+    setCommentsLoading(true);
+    try {
+      const res = await fetch('/api/admin/comments');
+      const data = await res.json();
+      setComments(data.comments || []);
+      setCommentsLoaded(true);
+    } catch { /* ignore */ }
+    setCommentsLoading(false);
+  }
+
+  async function handleCommentAction(id, action) {
+    try {
+      await fetch('/api/admin/comments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action }),
+      });
+      setComments(prev =>
+        action === 'delete'
+          ? prev.filter(c => c.id !== id)
+          : prev.map(c => c.id === id ? { ...c, approved: true } : c)
+      );
+    } catch { alert('Gabim gjatë veprimit'); }
+  }
 
   // ── AI Button 1: Generate a viral Albanian title (Fast) ───────────────────
   const handleGenerateTitle = async () => {
@@ -675,6 +720,9 @@ export default function AdminPage() {
                     <th className="py-3 px-2">Data</th>
                     <th className="py-3 px-2">Titulli</th>
                     <th className="py-3 px-2">Kategoria</th>
+                    <th className="py-3 px-2 text-center">
+                      <span title="Vizita totale (30 ditët e fundit)">👁 Vizita</span>
+                    </th>
                     <th className="py-3 px-2">Veprime</th>
                   </tr>
                 </thead>
@@ -689,6 +737,15 @@ export default function AdminPage() {
                       </td>
                       <td className="py-3 px-2 text-slate-600">
                         <span className="bg-slate-100 px-2 py-1 rounded text-xs">{post.section}</span>
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        {viewCounts[post.id] != null ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded-full">
+                            {viewCounts[post.id].toLocaleString()}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300 text-xs">—</span>
+                        )}
                       </td>
                       <td className="py-3 px-2 whitespace-nowrap">
                         <button
@@ -828,6 +885,120 @@ export default function AdminPage() {
           <p className="mt-5 text-xs text-slate-400 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
             💡 <strong>Si ta gjesh URL-in:</strong> Hap YouTube → Kanalin e televizionit → klikoni videon <em>Live</em> → kopjo URL-in nga shfletuesi (p.sh. <code>https://youtube.com/watch?v=abc123xyz</code>) dhe ngjite këtu. Klikoni jashtë fushës për ta ruajtur automatikisht.
           </p>
+        </div>
+
+        {/* ── COMMENT MODERATION ── */}
+        <div className="mt-12 bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">💬</span>
+              <h2 className="text-xl font-black text-slate-800 uppercase tracking-wide">Menaxhim Komentesh</h2>
+            </div>
+            <button
+              onClick={() => { if (!commentsLoaded) loadComments(); else loadComments(); }}
+              disabled={commentsLoading}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-60"
+            >
+              {commentsLoading ? <Spinner /> : '🔄'}
+              {commentsLoaded ? 'Rifresko' : 'Ngarko Komentet'}
+            </button>
+          </div>
+
+          {!commentsLoaded && !commentsLoading && (
+            <div className="text-center py-12 text-slate-400">
+              <span className="text-4xl block mb-3">💬</span>
+              <p className="text-sm">Kliko "Ngarko Komentet" për të parë komentet e lëna nga lexuesit.</p>
+            </div>
+          )}
+
+          {commentsLoading && (
+            <div className="flex items-center gap-2 text-slate-500 py-6">
+              <Spinner /> Duke ngarkuar komentet…
+            </div>
+          )}
+
+          {commentsLoaded && !commentsLoading && comments.length === 0 && (
+            <div className="text-center py-10 text-slate-400">
+              <span className="text-4xl block mb-3">✅</span>
+              <p className="text-sm">Nuk ka komente në prite.</p>
+            </div>
+          )}
+
+          {commentsLoaded && comments.length > 0 && (
+            <div className="space-y-3">
+              {/* Summary bar */}
+              <div className="flex gap-4 mb-5 text-sm">
+                <span className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-3 py-1.5 rounded-lg font-bold">
+                  ⏳ Në prite: {comments.filter(c => !c.approved).length}
+                </span>
+                <span className="bg-green-50 border border-green-200 text-green-700 px-3 py-1.5 rounded-lg font-bold">
+                  ✅ Aprovuar: {comments.filter(c => c.approved).length}
+                </span>
+                <span className="bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-bold">
+                  Gjithsej: {comments.length}
+                </span>
+              </div>
+
+              {comments.map(c => (
+                <div
+                  key={c.id}
+                  className={`flex gap-4 p-4 rounded-xl border transition-colors ${
+                    c.approved
+                      ? 'border-green-100 bg-green-50/40'
+                      : 'border-yellow-100 bg-yellow-50/40'
+                  }`}
+                >
+                  {/* Avatar */}
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white font-black text-base uppercase">
+                    {c.name?.charAt(0) || '?'}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <span className="font-black text-slate-800 text-sm">{c.name}</span>
+                      {c.approved
+                        ? <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">✅ Aprovuar</span>
+                        : <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold">⏳ Në prite</span>
+                      }
+                      <span className="text-xs text-slate-400">
+                        {new Date(c.created_at).toLocaleDateString('sq-AL', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+
+                    {/* Article reference */}
+                    {c.posts?.title && (
+                      <p className="text-[11px] text-slate-500 mb-1.5 italic truncate">
+                        📰 {c.posts.title}
+                      </p>
+                    )}
+
+                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{c.message}</p>
+
+                    {/* Actions */}
+                    <div className="flex gap-3 mt-3">
+                      {!c.approved && (
+                        <button
+                          onClick={() => handleCommentAction(c.id, 'approve')}
+                          className="text-[12px] font-bold text-green-600 hover:text-green-800 border border-green-200 bg-green-50 hover:bg-green-100 px-3 py-1 rounded-lg transition-colors"
+                        >
+                          ✅ Aprovo
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          if (confirm('Fshi këtë koment?')) handleCommentAction(c.id, 'delete');
+                        }}
+                        className="text-[12px] font-bold text-red-500 hover:text-red-700 border border-red-100 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-lg transition-colors"
+                      >
+                        🗑 Fshi
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
       </div>

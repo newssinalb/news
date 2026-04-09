@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-/** GET /api/comments?postId=123 — fetch comments for a post */
+/** GET /api/comments?postId=123 — fetch approved comments for a post */
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const postId = parseInt(searchParams.get('postId') || '0', 10);
@@ -12,12 +12,14 @@ export async function GET(request) {
     .from('post_comments')
     .select('id, name, message, created_at')
     .eq('post_id', postId)
+    .eq('approved', true)
     .order('created_at', { ascending: false })
     .limit(100);
 
   if (error) return Response.json({ comments: [] });
   return Response.json({ comments: data || [] });
 }
+
 
 /** POST /api/comments — submit a new comment */
 export async function POST(request) {
