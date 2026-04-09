@@ -45,6 +45,7 @@ export default function RootLayout({ children }) {
     <html
       lang="sq"
       className={`${geistSans.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <head>
         {/* RSS feed auto-discovery */}
