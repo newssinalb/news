@@ -15,13 +15,9 @@ export async function getPosts() {
     return [];
   }
 
-  // Only return posts created within the last 24 hours
-  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
   const { data, error } = await supabase
     .from('posts')
     .select('id, title, summary, image_url, author, section, is_breaking, created_at, published_at')
-    .gte('created_at', oneDayAgo)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -104,4 +100,45 @@ export async function deletePost(id) {
     throw new Error(msg);
   }
   return data;
+}
+
+// Merr të gjitha kanalet live
+export async function getLiveChannels() {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('live_channels')
+    .select('*')
+    .order('sort_order', { ascending: true });
+  if (error) { console.error('getLiveChannels error:', error.message); return []; }
+  return data || [];
+}
+
+// Përditëso një kanal live
+export async function updateLiveChannel(id, updates) {
+  if (!supabase) throw new Error('Supabase nuk është konfiguruar.');
+  const { data, error } = await supabase
+    .from('live_channels')
+    .update(updates)
+    .eq('id', id)
+    .select();
+  if (error) throw new Error(error.message || 'Gabim gjatë përditësimit.');
+  return data;
+}
+
+// Shto kanal të ri live
+export async function addLiveChannel(channel) {
+  if (!supabase) throw new Error('Supabase nuk është konfiguruar.');
+  const { data, error } = await supabase
+    .from('live_channels')
+    .insert([channel])
+    .select();
+  if (error) throw new Error(error.message || 'Gabim gjatë shtimit.');
+  return data;
+}
+
+// Fshi kanal live
+export async function deleteLiveChannel(id) {
+  if (!supabase) throw new Error('Supabase nuk është konfiguruar.');
+  const { error } = await supabase.from('live_channels').delete().eq('id', id);
+  if (error) throw new Error(error.message || 'Gabim gjatë fshirjes.');
 }

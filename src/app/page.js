@@ -1,6 +1,7 @@
 import { getPosts } from '@/lib/supabase';
 import { getWorldNews } from '@/lib/newsapi';
 import NewsTicker from '@/components/NewsTicker';
+import LatestNewsBar from '@/components/LatestNewsBar';
 import HeroArticle from '@/components/HeroArticle';
 import ArticleCard from '@/components/ArticleCard';
 import CategoryGrid from '@/components/CategoryGrid';
@@ -76,6 +77,9 @@ export default async function Home(props) {
 
   return (
     <div className="bg-white min-h-screen w-full">
+      {/* Sticky second header — scrolling latest news bar */}
+      <LatestNewsBar posts={latestPosts} />
+
     <main className="max-w-[1200px] mx-auto px-4 sm:px-8 py-6 w-full">
       
       {/* 1. Ticker Section */}

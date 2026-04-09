@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { addPost, getPosts, getPostById, updatePost, deletePost } from '@/lib/supabase';
+import { addPost, getPosts, getPostById, updatePost, deletePost, getLiveChannels, updateLiveChannel, addLiveChannel, deleteLiveChannel } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
 const SCITELY_API_KEY = 'sk-scitely-d49a34aea733305726cc6dc537e0342f988f35867ca57e5025836a5d0642c066';
@@ -66,6 +66,12 @@ export default function AdminPage() {
   const [editingPostId, setEditingPostId] = useState(null);
   const [fetchingPosts, setFetchingPosts] = useState(true);
 
+  // Live TV state
+  const [liveChannels, setLiveChannels] = useState([]);
+  const [liveLoading, setLiveLoading] = useState(true);
+  const [newChannel, setNewChannel] = useState({ name: '', youtube_url: '', sort_order: 0 });
+  const [addingChannel, setAddingChannel] = useState(false);
+
   const [titleLoading, setTitleLoading]     = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [contentLoading, setContentLoading] = useState(false);
@@ -76,13 +82,16 @@ export default function AdminPage() {
   const SECTIONS = ['Aktualitet', 'Edi Rama', 'Politikë', 'Bota', 'Showbiz', 'Sport', 'Ekonomi', 'Kronikë', 'Teknologji', 'Të Tjera'];
 
   useEffect(() => {
-    async function loadPosts() {
+    async function loadData() {
       setFetchingPosts(true);
-      const data = await getPosts();
-      setPosts(data || []);
+      setLiveLoading(true);
+      const [postsData, channelsData] = await Promise.all([getPosts(), getLiveChannels()]);
+      setPosts(postsData || []);
+      setLiveChannels(channelsData || []);
       setFetchingPosts(false);
+      setLiveLoading(false);
     }
-    loadPosts();
+    loadData();
   }, []);
 
   // ── AI Button 1: Generate a viral Albanian title (Fast) ───────────────────
@@ -697,6 +706,125 @@ export default function AdminPage() {
             </div>
           )}
         </div>
+
+        {/* ── LIVE TV MANAGEMENT ── */}
+        <div className="mt-12 bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+          <div className="flex items-center gap-2 mb-6">
+            <span className="relative flex h-2.5 w-2.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600" /></span>
+            <h2 className="text-xl font-black text-slate-800 uppercase tracking-wide">Menaxhim Live TV</h2>
+          </div>
+
+          {/* Add new channel */}
+          <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 mb-6">
+            <p className="text-sm font-bold text-slate-700 mb-3">➕ Shto Kanal të Ri</p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="text"
+                placeholder="Emri i kanalit (p.sh. Euronews Shqip)"
+                value={newChannel.name}
+                onChange={e => setNewChannel(p => ({ ...p, name: e.target.value }))}
+                className="flex-1 p-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="url"
+                placeholder="URL e YouTube (p.sh. https://youtube.com/watch?v=...)"
+                value={newChannel.youtube_url}
+                onChange={e => setNewChannel(p => ({ ...p, youtube_url: e.target.value }))}
+                className="flex-[2] p-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                disabled={addingChannel || !newChannel.name.trim()}
+                onClick={async () => {
+                  setAddingChannel(true);
+                  try {
+                    await addLiveChannel({ name: newChannel.name.trim(), youtube_url: newChannel.youtube_url.trim(), sort_order: liveChannels.length + 1 });
+                    const updated = await getLiveChannels();
+                    setLiveChannels(updated);
+                    setNewChannel({ name: '', youtube_url: '', sort_order: 0 });
+                  } catch(e) { alert('Gabim: ' + e.message); }
+                  setAddingChannel(false);
+                }}
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-sm transition-colors disabled:opacity-50"
+              >
+                {addingChannel ? 'Duke shtuar...' : 'Shto'}
+              </button>
+            </div>
+          </div>
+
+          {/* Channel list */}
+          {liveLoading ? (
+            <div className="flex items-center gap-2 text-slate-500"><Spinner /> Duke ngarkuar kanalet...</div>
+          ) : liveChannels.length === 0 ? (
+            <p className="text-slate-500 text-sm">Nuk ka kanale. Shto njërin me formularin lart.</p>
+          ) : (
+            <div className="space-y-3">
+              {liveChannels.map(ch => (
+                <div key={ch.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50">
+                  {/* Active toggle */}
+                  <div
+                    className={`flex-shrink-0 h-6 w-11 rounded-full cursor-pointer transition-colors duration-200 relative ${ch.is_active ? 'bg-red-500' : 'bg-slate-300'}`}
+                    onClick={async () => {
+                      try {
+                        await updateLiveChannel(ch.id, { is_active: !ch.is_active });
+                        setLiveChannels(prev => prev.map(c => c.id === ch.id ? { ...c, is_active: !c.is_active } : c));
+                      } catch(e) { alert(e.message); }
+                    }}
+                  >
+                    <span className={`absolute top-1 h-4 w-4 bg-white rounded-full shadow transition-transform duration-200 ${ch.is_active ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </div>
+
+                  {/* Name */}
+                  <input
+                    type="text"
+                    defaultValue={ch.name}
+                    onBlur={async e => {
+                      if (e.target.value.trim() !== ch.name) {
+                        try { await updateLiveChannel(ch.id, { name: e.target.value.trim() }); }
+                        catch(err) { alert(err.message); }
+                      }
+                    }}
+                    className="w-32 text-sm font-bold border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+                  />
+
+                  {/* YouTube URL */}
+                  <input
+                    type="url"
+                    defaultValue={ch.youtube_url}
+                    placeholder="https://youtube.com/watch?v=..."
+                    onBlur={async e => {
+                      if (e.target.value !== ch.youtube_url) {
+                        try {
+                          await updateLiveChannel(ch.id, { youtube_url: e.target.value });
+                          setLiveChannels(prev => prev.map(c => c.id === ch.id ? { ...c, youtube_url: e.target.value } : c));
+                          alert(`✅ URL u ruajt për "${ch.name}"!`);
+                        } catch(err) { alert(err.message); }
+                      }
+                    }}
+                    className="flex-1 text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white font-mono text-slate-600"
+                  />
+
+                  {/* Delete */}
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`Fshi "${ch.name}"?`)) return;
+                      try {
+                        await deleteLiveChannel(ch.id);
+                        setLiveChannels(prev => prev.filter(c => c.id !== ch.id));
+                      } catch(e) { alert(e.message); }
+                    }}
+                    className="text-red-500 hover:text-red-700 font-bold text-lg flex-shrink-0 transition-colors"
+                    title="Fshi kanalin"
+                  >×</button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p className="mt-5 text-xs text-slate-400 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
+            💡 <strong>Si ta gjesh URL-in:</strong> Hap YouTube → Kanalin e televizionit → klikoni videon <em>Live</em> → kopjo URL-in nga shfletuesi (p.sh. <code>https://youtube.com/watch?v=abc123xyz</code>) dhe ngjite këtu. Klikoni jashtë fushës për ta ruajtur automatikisht.
+          </p>
+        </div>
+
       </div>
     </div>
   );

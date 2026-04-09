@@ -22,7 +22,7 @@ export default function CategoryGrid({ title, posts, href }) {
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
         {posts.map((post, idx) => (
-          <div key={post.id || idx} className="bg-slate-50/50 rounded-xl p-3 hover:bg-white hover:shadow-xl transition-all duration-300 border border-slate-100 h-full flex flex-col group/card cursor-pointer">
+          <div key={`${post.id ?? idx}-${idx}`} className="bg-slate-50/50 rounded-xl p-3 hover:bg-white hover:shadow-xl transition-all duration-300 border border-slate-100 h-full flex flex-col group/card cursor-pointer">
             <ArticleCard post={post} layout="vertical" />
           </div>
         ))}

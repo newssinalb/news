@@ -50,6 +50,8 @@ export default function Header() {
     { name: 'TË TJERA', href: '/?section=Të Tjera' },
   ];
 
+  const liveLink = { name: 'LIVE', href: '/live', isLive: true };
+
   return (
     <>
       {/* Top Bar */}
@@ -106,6 +108,16 @@ export default function Header() {
           {/* Default Desktop Navigation */}
           <nav className="hidden lg:block w-auto z-[50]">
             <ul className="flex items-center justify-end gap-5 xl:gap-7 text-[13px] xl:text-[14px] font-bold text-slate-600 tracking-wider">
+              {/* LIVE special link */}
+              <li>
+                <Link href={liveLink.href} className="relative py-2 group inline-flex items-center gap-1.5 whitespace-nowrap">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-600" />
+                  </span>
+                  <span className="text-red-600 group-hover:text-red-800 transition-colors font-black">LIVE</span>
+                </Link>
+              </li>
               {navLinks.map((link) => (
                 <li key={link.name}>
                   <Link 
@@ -140,25 +152,34 @@ export default function Header() {
         <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
           <p className="text-[11px] font-black tracking-[0.2em] text-slate-400 uppercase mb-5 ml-1 drop-shadow-sm">Kategoritë</p>
           <ul className="flex flex-col gap-1.5">
-            {navLinks.map((link, index) => (
-              <li 
-                key={link.name} 
-                className={`transform transition-all duration-[600ms] ease-out ${
-                  isMobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'
-                }`}
-                style={{ transitionDelay: `${isMobileMenuOpen ? 150 + (index * 40) : 0}ms` }}
-              >
-                <Link 
-                  href={link.href} 
-                  className="block py-3.5 px-4 text-[14px] font-black tracking-widest text-slate-800 uppercase rounded-xl hover:bg-slate-50 hover:text-red-600 active:bg-slate-100 transition-colors border border-transparent hover:border-slate-100 relative group/mob nav-glass"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {link.name}
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 opacity-0 group-hover/mob:opacity-100 transition-opacity transform group-hover/mob:translate-x-1 duration-300">❯</span>
+              {/* LIVE in mobile menu */}
+              <li className={`transform transition-all duration-[600ms] ease-out ${
+                isMobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'
+              }`} style={{ transitionDelay: `${isMobileMenuOpen ? 100 : 0}ms` }}>
+                <Link href="/live" className="block py-3.5 px-4 text-[14px] font-black tracking-widest text-red-600 uppercase rounded-xl hover:bg-red-50 active:bg-red-100 transition-colors border border-red-100 relative flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
+                  <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-red-600" /></span>
+                  LIVE TV
                 </Link>
               </li>
-            ))}
-          </ul>
+              {navLinks.map((link, index) => (
+                <li 
+                  key={link.name} 
+                  className={`transform transition-all duration-[600ms] ease-out ${
+                    isMobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'
+                  }`}
+                  style={{ transitionDelay: `${isMobileMenuOpen ? 150 + (index * 40) : 0}ms` }}
+                >
+                  <Link 
+                    href={link.href} 
+                    className="block py-3.5 px-4 text-[14px] font-black tracking-widest text-slate-800 uppercase rounded-xl hover:bg-slate-50 hover:text-red-600 active:bg-slate-100 transition-colors border border-transparent hover:border-slate-100 relative group/mob nav-glass"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {link.name}
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 opacity-0 group-hover/mob:opacity-100 transition-opacity transform group-hover/mob:translate-x-1 duration-300">❯</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
         </div>
         
       </aside>
