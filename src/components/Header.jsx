@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import SearchOverlay from './SearchOverlay';
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -92,18 +93,26 @@ export default function Header() {
             </h1>
           </Link>
 
+          {/* Search overlay trigger — desktop */}
+          <div className="hidden lg:block">
+            <SearchOverlay />
+          </div>
+
           {/* Hamburger Menu Toggle Button */}
-          <button 
-            className="lg:hidden p-2 -mr-2 text-slate-800 hover:text-red-600 focus:outline-none transition-colors z-[60]"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            <div className="w-6 h-5 flex flex-col justify-between items-end">
-              <span className={`h-0.5 bg-current rounded-full transition-all duration-300 ease-in-out origin-right ${isMobileMenuOpen ? 'w-6 -rotate-45 -translate-y-[0px] -translate-x-[1px]' : 'w-6'}`} />
-              <span className={`h-0.5 bg-current rounded-full transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'w-full opacity-0' : 'w-5'}`} />
-              <span className={`h-0.5 bg-current rounded-full transition-all duration-300 ease-in-out origin-right ${isMobileMenuOpen ? 'w-6 rotate-45 translate-y-[2px] -translate-x-[1px]' : 'w-4'}`} />
-            </div>
-          </button>
+          <div className="flex items-center gap-3 lg:hidden">
+            <SearchOverlay />
+            <button 
+              className="p-2 -mr-2 text-slate-800 hover:text-red-600 focus:outline-none transition-colors z-[60]"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              <div className="w-6 h-5 flex flex-col justify-between items-end">
+                <span className={`h-0.5 bg-current rounded-full transition-all duration-300 ease-in-out origin-right ${isMobileMenuOpen ? 'w-6 -rotate-45 -translate-y-[0px] -translate-x-[1px]' : 'w-6'}`} />
+                <span className={`h-0.5 bg-current rounded-full transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'w-full opacity-0' : 'w-5'}`} />
+                <span className={`h-0.5 bg-current rounded-full transition-all duration-300 ease-in-out origin-right ${isMobileMenuOpen ? 'w-6 rotate-45 translate-y-[2px] -translate-x-[1px]' : 'w-4'}`} />
+              </div>
+            </button>
+          </div>
           
           {/* Default Desktop Navigation */}
           <nav className="hidden lg:block w-auto z-[50]">

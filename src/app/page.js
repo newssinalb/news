@@ -5,6 +5,7 @@ import LatestNewsBar from '@/components/LatestNewsBar';
 import HeroArticle from '@/components/HeroArticle';
 import ArticleCard from '@/components/ArticleCard';
 import CategoryGrid from '@/components/CategoryGrid';
+import BreakingNewsBanner from '@/components/BreakingNewsBanner';
 
 export const revalidate = 60; // Cash the page for 60 seconds for instant load times (ISR)
 
@@ -77,6 +78,8 @@ export default async function Home(props) {
 
   return (
     <div className="bg-white min-h-screen w-full">
+      {/* Breaking news banner — only shows if there's a fresh breaking post */}
+      <BreakingNewsBanner posts={posts} />
       {/* Sticky second header — scrolling latest news bar */}
       <LatestNewsBar posts={latestPosts} />
 

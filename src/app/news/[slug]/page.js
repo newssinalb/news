@@ -11,6 +11,7 @@ import ReadingProgressBar from '@/components/ReadingProgressBar';
 import ShareButtons from '@/components/ShareButtons';
 import BackToTop from '@/components/BackToTop';
 import ViewTracker from '@/components/ViewTracker';
+import CommentsSection from '@/components/CommentsSection';
 
 export const revalidate = 60;
 
@@ -205,6 +206,9 @@ export default async function NewsArticlePage(props) {
 
             {/* ── Social Share Buttons ── */}
             <ShareButtons url={articleUrl} title={post.title} />
+
+            {/* ── Comments Section ── */}
+            <CommentsSection postId={post.id} />
 
             {/* Media Gallery */}
             {Array.isArray(post.media_gallery) && post.media_gallery.length > 0 && (
