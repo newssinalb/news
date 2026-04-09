@@ -10,6 +10,7 @@ import Link from 'next/link';
 import ReadingProgressBar from '@/components/ReadingProgressBar';
 import ShareButtons from '@/components/ShareButtons';
 import BackToTop from '@/components/BackToTop';
+import ViewTracker from '@/components/ViewTracker';
 
 export const revalidate = 60;
 
@@ -108,6 +109,9 @@ export default async function NewsArticlePage(props) {
 
   return (
     <div className="bg-white min-h-screen w-full">
+
+      {/* Track this page view — invisible, fire-and-forget */}
+      <ViewTracker slug={slug} />
 
       {/* Reading progress bar — sticks to top as you scroll */}
       <ReadingProgressBar />

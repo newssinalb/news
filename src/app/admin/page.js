@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { addPost, getPosts, getPostById, updatePost, deletePost, getLiveChannels, updateLiveChannel, addLiveChannel, deleteLiveChannel } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import StatsModal from '@/components/StatsModal';
 
 const SCITELY_API_KEY = 'sk-scitely-d49a34aea733305726cc6dc537e0342f988f35867ca57e5025836a5d0642c066';
 const SCITELY_URL = 'https://api.scitely.com/v1/chat/completions';
@@ -347,11 +348,15 @@ export default function AdminPage() {
       <div className="max-w-3xl mx-auto p-6 md:p-10">
 
         {/* Page Title */}
-        <div className="mb-8 flex items-center gap-3">
-          <span className="w-1.5 h-8 bg-red-600 rounded-full inline-block" />
-          <h1 className="text-2xl md:text-3xl font-black text-slate-800 uppercase tracking-wide">
-            {editingPostId ? 'Panel Admin — Ndrysho Lajm' : 'Panel Admin — Shto Lajm'}
-          </h1>
+        <div className="mb-8 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="w-1.5 h-8 bg-red-600 rounded-full inline-block" />
+            <h1 className="text-2xl md:text-3xl font-black text-slate-800 uppercase tracking-wide">
+              {editingPostId ? 'Panel Admin — Ndrysho Lajm' : 'Panel Admin — Shto Lajm'}
+            </h1>
+          </div>
+          {/* Statistics button */}
+          <StatsModal />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-7 bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
