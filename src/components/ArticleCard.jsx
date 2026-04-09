@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import { encodeId } from '@/lib/slug';
 
 export default function ArticleCard({ post, category = "AKTUALITET", layout = "vertical" }) {
   if (!post) return null;
 
   // External (NewsAPI) articles link out; internal ones go to the reader page
-  const href = post.externalUrl ? post.externalUrl : `/news/${post.id}`;
+  const href = post.externalUrl ? post.externalUrl : `/news/${encodeId(post.id)}`;
   const linkProps = post.externalUrl
     ? { target: '_blank', rel: 'noopener noreferrer' }
     : {};

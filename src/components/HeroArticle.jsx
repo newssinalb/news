@@ -1,10 +1,11 @@
 import Link from 'next/link';
+import { encodeId } from '@/lib/slug';
 
 export default function HeroArticle({ post, category = "KRYESORE" }) {
   if (!post) return null;
 
   return (
-    <Link href={`/news/${post.id}`} className="block relative group overflow-hidden w-full h-[450px] rounded-2xl shadow-sm">
+    <Link href={`/news/${encodeId(post.id)}`} className="block relative group overflow-hidden w-full h-[450px] rounded-2xl shadow-sm">
       {/* Background Image */}
       {post.image_url ? (
         <img 

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { encodeId } from '@/lib/slug';
 
 export default function NewsTicker({ latestPosts }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -40,7 +41,7 @@ export default function NewsTicker({ latestPosts }) {
       {/* Ticker Content area (Breadcrumb style) */}
       <div className="flex-1 overflow-hidden relative px-6 flex items-center h-full">
         <Link 
-          href={`/news/${activePost.id}`} 
+          href={`/news/${encodeId(activePost.id)}`} 
           className="flex items-center gap-3 w-full group transition-all duration-500 transform opacity-100"
           key={currentIndex}
         >

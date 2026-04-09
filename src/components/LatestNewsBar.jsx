@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { encodeId } from '@/lib/slug';
 
 export default function LatestNewsBar({ posts = [] }) {
   const [paused, setPaused] = useState(false);
@@ -62,7 +63,7 @@ export default function LatestNewsBar({ posts = [] }) {
             {items.map((post, idx) => (
               <Link
                 key={`${post.id}-${idx}`}
-                href={`/news/${post.id}`}
+                href={`/news/${encodeId(post.id)}`}
                 className="inline-flex items-center gap-2.5 px-6 text-[12.5px] font-medium text-slate-300 hover:text-white transition-colors duration-200 group"
               >
                 {/* Category pill */}

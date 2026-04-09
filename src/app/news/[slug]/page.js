@@ -1,13 +1,84 @@
+/**
+ * SEO: Dynamic metadata for each article page.
+ * generateMetadata runs on the server and injects proper <title>,
+ * <meta description>, Open Graph and Twitter Card tags into <head>.
+ */
 import { getPostById, getPosts } from '@/lib/supabase';
+import { decodeId, encodeId } from '@/lib/slug';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import ArticleCard from '@/components/ArticleCard';
+import ReadingProgressBar from '@/components/ReadingProgressBar';
+import ShareButtons from '@/components/ShareButtons';
+import BackToTop from '@/components/BackToTop';
 
 export const revalidate = 60;
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://rilindjenews.com';
+const SITE_NAME = 'Rilindje News';
+
+// ── SEO: generateMetadata ─────────────────────────────────────────
+export async function generateMetadata(props) {
+  const params = await props.params;
+  const id = decodeId(params.slug);
+  if (!id) return { title: 'Lajm i Panjohur' };
+
+  const post = await getPostById(id);
+  if (!post) return { title: 'Lajm i Panjohur' };
+
+  const description = post.summary
+    ? post.summary.slice(0, 160)
+    : post.content?.slice(0, 160);
+
+  const articleUrl = `${SITE_URL}/news/${params.slug}`;
+
+  return {
+    title: `${post.title} | ${SITE_NAME}`,
+    description,
+    keywords: [post.section, 'lajme', 'albania', 'news', SITE_NAME].filter(Boolean),
+    authors: post.author ? [{ name: post.author }] : [],
+    openGraph: {
+      type: 'article',
+      title: post.title,
+      description,
+      url: articleUrl,
+      siteName: SITE_NAME,
+      locale: 'sq_AL',
+      publishedTime: post.published_at || post.created_at,
+      authors: post.author ? [post.author] : [],
+      section: post.section || 'Aktualitet',
+      images: post.image_url
+        ? [{ url: post.image_url, alt: post.title, width: 1200, height: 630 }]
+        : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description,
+      images: post.image_url ? [post.image_url] : [],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
+    },
+    alternates: { canonical: articleUrl },
+  };
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function readingTimeMin(text) {
+  if (!text) return 1;
+  const words = text.trim().split(/\s+/).length;
+  return Math.max(1, Math.round(words / 200));
+}
+
+// ── Page ──────────────────────────────────────────────────────────
 export default async function NewsArticlePage(props) {
   const params = await props.params;
-  const { id } = params;
+  const { slug } = params;
+
+  const id = decodeId(slug);
+  if (!id) notFound();
 
   const [post, allPostsRes] = await Promise.all([
     getPostById(id),
@@ -26,16 +97,21 @@ export default async function NewsArticlePage(props) {
   });
 
   const allPosts = allPostsRes || [];
-  // Sidebar: up to 8 other posts
   const relatedPosts = allPosts.filter(p => p.id !== post.id).slice(0, 8);
 
-  // Only show "LAJMI FUNDIT" badge if the post is less than 24 hours old
   const postDate = new Date(post.published_at || post.created_at);
   const isWithin24Hours = (Date.now() - postDate.getTime()) < 24 * 60 * 60 * 1000;
   const showBreaking = post.is_breaking && isWithin24Hours;
 
+  const readMins = readingTimeMin(post.content);
+  const articleUrl = `${SITE_URL}/news/${slug}`;
+
   return (
     <div className="bg-white min-h-screen w-full">
+
+      {/* Reading progress bar — sticks to top as you scroll */}
+      <ReadingProgressBar />
+
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 py-8 w-full">
 
         {/* Back Button */}
@@ -51,7 +127,7 @@ export default async function NewsArticlePage(props) {
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-12 items-start">
 
           {/* ════════════ LEFT: Article ════════════ */}
-          <main className="flex-1 min-w-0">
+          <main className="flex-1 min-w-0" id="article-content">
 
             {/* Category / Breaking badge */}
             <div className="flex gap-3 items-center mb-5">
@@ -78,7 +154,7 @@ export default async function NewsArticlePage(props) {
               </p>
             )}
 
-            {/* Author + Date */}
+            {/* Author + Date + Reading Time */}
             <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-y border-gray-100 mb-8">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-base uppercase border border-slate-200">
@@ -88,6 +164,13 @@ export default async function NewsArticlePage(props) {
                   <p className="text-sm font-bold text-slate-900 leading-none mb-1">{post.author || 'Anonim'}</p>
                   <p className="text-[13px] text-slate-500">{dateStr}</p>
                 </div>
+              </div>
+              {/* Reading time badge */}
+              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-full px-3 py-1.5 text-[12px] font-semibold text-slate-600">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
+                </svg>
+                {readMins} min lexim
               </div>
             </div>
 
@@ -115,6 +198,9 @@ export default async function NewsArticlePage(props) {
                   </p>
                 ))}
             </article>
+
+            {/* ── Social Share Buttons ── */}
+            <ShareButtons url={articleUrl} title={post.title} />
 
             {/* Media Gallery */}
             {Array.isArray(post.media_gallery) && post.media_gallery.length > 0 && (
@@ -177,10 +263,9 @@ export default async function NewsArticlePage(props) {
                   {relatedPosts.map((relatedPost, idx) => (
                     <div key={`${relatedPost.id}-${idx}`} className="py-3 first:pt-0">
                       <Link
-                        href={`/news/${relatedPost.id}`}
+                        href={`/news/${encodeId(relatedPost.id)}`}
                         className="flex gap-3 group hover:bg-slate-50 transition-colors rounded-lg p-2 -mx-2"
                       >
-                        {/* Thumbnail */}
                         <div className="w-20 h-16 flex-shrink-0 overflow-hidden rounded-md bg-slate-100 relative">
                           {relatedPost.image_url ? (
                             <img
@@ -193,8 +278,6 @@ export default async function NewsArticlePage(props) {
                             <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-xl">🌍</div>
                           )}
                         </div>
-
-                        {/* Text */}
                         <div className="flex-1 min-w-0">
                           {relatedPost.section && (
                             <span className="text-[10px] font-black uppercase tracking-wider text-red-500 mb-1 block">
@@ -227,6 +310,9 @@ export default async function NewsArticlePage(props) {
 
         </div>
       </div>
+
+      {/* Floating back-to-top button */}
+      <BackToTop />
     </div>
   );
 }
