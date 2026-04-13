@@ -48,6 +48,8 @@ export default function RootLayout({ children }) {
       suppressHydrationWarning
     >
       <head>
+        {/* Google Tag Manager — must be first in <head> for best coverage */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-NXNM5T5L');` }} />
         {/* RSS feed auto-discovery */}
         <link rel="alternate" type="application/rss+xml" title="NextShqip RSS" href="/feed.xml" />
         {/* Prevent dark mode flash on page load */}
@@ -61,6 +63,8 @@ export default function RootLayout({ children }) {
         ` }} />
       </head>
       <body className="min-h-full flex flex-col bg-white overflow-x-hidden relative" suppressHydrationWarning>
+        {/* Google Tag Manager (noscript) — must be first inside <body> */}
+        <noscript dangerouslySetInnerHTML={{ __html: `<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NXNM5T5L" height="0" width="0" style="display:none;visibility:hidden"></iframe>` }} />
         <Header />
         <div className="flex-1 flex flex-col">
           {children}
