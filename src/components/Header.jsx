@@ -41,7 +41,7 @@ export default function Header() {
 
   const navLinks = [
     { name: 'AKTUALITET', href: '/?section=Aktualitet' },
-    { name: 'EDI RAMA', href: '/?section=Edi Rama' },
+    { name: 'LAJMET E FUNDIT', href: '/?section=Lajmet e Fundit' },
     { name: 'POLITIKË', href: '/?section=Politikë' },
     { name: 'BOTA', href: '/?section=Bota' },
     { name: 'SHOWBIZ', href: '/?section=Showbiz' },
@@ -83,14 +83,19 @@ export default function Header() {
           
           {/* Logo */}
           <Link href="/" className="flex-shrink-0 group relative z-[60]" onClick={() => setIsMobileMenuOpen(false)}>
-            <div className="absolute -inset-6 bg-gradient-to-r from-red-600/5 via-orange-500/5 to-transparent blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full -z-10"></div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter flex items-center gap-0.5 select-none drop-shadow-sm">
-              <span className="bg-clip-text text-transparent bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 group-hover:from-red-600 group-hover:to-red-800 transition-all duration-300">
-                NEWS
+            {/* Light mode hover glow */}
+            <div className="absolute -inset-6 bg-gradient-to-r from-red-600/5 via-orange-500/5 to-transparent blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full -z-10 dark:hidden"></div>
+            {/* Dark mode: always-on red ambient glow + stronger on hover */}
+            <div className="absolute -inset-4 hidden dark:block bg-red-600/10 blur-2xl rounded-full transition-all duration-500 group-hover:bg-red-500/25 group-hover:blur-3xl -z-10"></div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter flex items-center gap-0 select-none">
+              {/* "Next" — dark slate in light, bright white in dark */}
+              <span className="bg-clip-text text-transparent bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 dark:from-white dark:via-slate-100 dark:to-slate-300 group-hover:from-red-600 group-hover:to-red-700 dark:group-hover:from-red-300 dark:group-hover:to-red-400 transition-all duration-300 dark:[filter:drop-shadow(0_0_8px_rgba(255,255,255,0.25))]">
+                Next
               </span>
-              <span className="text-red-600 font-extrabold transform group-hover:scale-105 transition-transform duration-300 inline-block will-change-transform">23</span>
-              <span className="text-red-600/80 font-bold text-2xl sm:text-3xl lg:text-4xl -mx-1 -rotate-12 group-hover:rotate-0 transition-transform duration-300">/</span>
-              <span className="text-red-600 font-extrabold transform group-hover:scale-105 transition-transform duration-300 inline-block will-change-transform delay-75">7</span>
+              {/* "Shqip" — red in both, vivid neon-ish in dark */}
+              <span className="bg-clip-text text-transparent bg-gradient-to-br from-red-600 to-red-700 dark:from-red-400 dark:via-rose-400 dark:to-orange-400 group-hover:from-slate-800 group-hover:to-slate-950 dark:group-hover:from-white dark:group-hover:to-slate-200 transition-all duration-300 dark:[filter:drop-shadow(0_0_12px_rgba(239,68,68,0.6))]">
+                Shqip
+              </span>
             </h1>
           </Link>
 

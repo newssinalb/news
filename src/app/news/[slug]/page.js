@@ -16,7 +16,7 @@ import CommentsSection from '@/components/CommentsSection';
 export const revalidate = 60;
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://rilindjenews.com';
-const SITE_NAME = 'Rilindje News';
+const SITE_NAME = 'NextShqip';
 
 // ── SEO: generateMetadata ─────────────────────────────────────────
 export async function generateMetadata(props) {

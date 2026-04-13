@@ -23,11 +23,15 @@ export default async function Home(props) {
 
   // IF User clicked a specific category loop, render only that category
   if (sectionFilter) {
-    const dbPosts = posts.filter(p => p.section === sectionFilter);
-    // For Bota: merge user posts with all live RSS world news
-    const filteredPosts = sectionFilter === 'Bota'
-      ? [...dbPosts, ...worldNewsPosts]
-      : dbPosts;
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    // For 'Lajmet e Fundit': ALL posts from last 7 days, sorted newest → oldest
+    const filteredPosts = sectionFilter === 'Lajmet e Fundit'
+      ? posts
+          .filter(p => new Date(p.published_at || p.created_at) >= sevenDaysAgo)
+          .sort((a, b) => new Date(b.published_at || b.created_at) - new Date(a.published_at || a.created_at))
+      : sectionFilter === 'Bota'
+        ? [...posts.filter(p => p.section === sectionFilter), ...worldNewsPosts]
+        : posts.filter(p => p.section === sectionFilter);
 
     return (
       <div className="bg-white min-h-screen w-full">
@@ -67,7 +71,8 @@ export default async function Home(props) {
   const subHeroPosts = posts.slice(1, 5); // next 4 posts
 
   // Determine sections dynamically to map at the bottom
-  const SECTIONS = ['Aktualitet', 'Edi Rama', 'Politikë', 'Bota', 'Showbiz', 'Sport', 'Ekonomi', 'Kronikë', 'Teknologji', 'Të Tjera'];
+  const SECTIONS = ['Lajmet e Fundit', 'Aktualitet', 'Politikë', 'Bota', 'Showbiz', 'Sport', 'Ekonomi', 'Kronikë', 'Teknologji', 'Të Tjera'];
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   
   // For Bota: merge user-posted Bota articles with Google News RSS
   // Homepage shows a 20-article preview; full list (up to 80) is at /?section=Bota
@@ -119,10 +124,15 @@ export default async function Home(props) {
           {/* Dynamic Bottom Grid Sections */}
           <div className="flex flex-col gap-12 pt-8 border-t-2 border-slate-100 border-dashed">
             {SECTIONS.map((sectionName) => {
-              // For Bota use the merged Google News + user posts; otherwise filter from DB
-              const sectionPosts = sectionName === 'Bota'
-                ? botaOverride
-                : posts.filter(p => p.section === sectionName).slice(0, 5);
+              // For 'Lajmet e Fundit': last 7 days sorted newest→oldest, preview 5; Bota: merged; others: by section
+              const sectionPosts = sectionName === 'Lajmet e Fundit'
+                ? posts
+                    .filter(p => new Date(p.published_at || p.created_at) >= sevenDaysAgo)
+                    .sort((a, b) => new Date(b.published_at || b.created_at) - new Date(a.published_at || a.created_at))
+                    .slice(0, 5)
+                : sectionName === 'Bota'
+                  ? botaOverride
+                  : posts.filter(p => p.section === sectionName).slice(0, 5);
               
               if (sectionPosts.length === 0) return null;
 

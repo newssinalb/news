@@ -4,7 +4,7 @@ import { encodeId } from '@/lib/slug';
 export const dynamic = 'force-dynamic';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://rilindjenews.com';
-const SITE_NAME = 'Rilindje News';
+const SITE_NAME = 'NextShqip';
 
 /**
  * GET /feed.xml
@@ -40,7 +40,7 @@ export async function GET() {
     const pubDate    = new Date(post.published_at || post.created_at).toUTCString();
     const title      = escapeXml(post.title);
     const desc       = escapeXml(post.summary || (post.content || '').slice(0, 200));
-    const author     = escapeXml(post.author || 'Rilindje News');
+    const author     = escapeXml(post.author || 'NextShqip');
     const category   = escapeXml(post.section || 'Aktualitet');
     const imageTag   = post.image_url
       ? `<enclosure url="${escapeXml(post.image_url)}" type="image/jpeg" length="0" />`

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Faqja nuk u gjet | Rilindje News',
+  title: 'Faqja nuk u gjet | Next Shqip',
   description: 'Faqja që kërkuat nuk ekziston ose është fshirë.',
 };
 
