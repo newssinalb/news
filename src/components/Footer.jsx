@@ -11,11 +11,9 @@ export default function Footer() {
         {/* Brand & About */}
         <div className="flex flex-col gap-4">
           <Link href="/" className="flex-shrink-0 group relative inline-block w-max">
-            <h2 className="text-3xl font-black tracking-tighter flex items-center gap-0.5 select-none drop-shadow-sm">
-              <span className="text-white group-hover:text-red-500 transition-colors duration-300">NEWS</span>
-              <span className="text-red-600 font-extrabold transform group-hover:scale-105 transition-transform duration-300 inline-block will-change-transform">23</span>
-              <span className="text-red-500 font-bold text-3xl -mx-1 -rotate-12 group-hover:rotate-0 transition-transform duration-300">/</span>
-              <span className="text-red-600 font-extrabold transform group-hover:scale-105 transition-transform duration-300 inline-block will-change-transform delay-75">7</span>
+            <h2 className="text-3xl font-black tracking-tighter flex items-center gap-0 select-none drop-shadow-sm">
+              <span className="text-white group-hover:text-red-400 transition-colors duration-300">Next</span>
+              <span className="text-red-500 group-hover:text-white transition-colors duration-300">Shqip</span>
             </h2>
           </Link>
           <p className="text-sm font-medium leading-[1.8] opacity-80 mt-2">
@@ -62,10 +60,10 @@ export default function Footer() {
 
       {/* Copyright Bar */}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 mt-14 pt-8 border-t border-slate-700/50 flex flex-col md:flex-row items-center justify-between text-[11px] font-bold tracking-wider opacity-60">
-        <p>© {currentYear} NEWS23/7. TË GJITHA TË DREJTAT E REZERVUARA.</p>
+        <p>© {currentYear} NEXTSHQIP. TË GJITHA TË DREJTAT E REZERVUARA.</p>
         <div className="flex gap-6 mt-4 md:mt-0 uppercase">
           <Link href="#" className="hover:text-red-500 transition-colors">KUSHTET E PËRDORIMIT</Link>
-          <Link href="#" className="hover:text-red-500 transition-colors">POLITIKA E PRIVATËSISË</Link>
+          <Link href="/privacy" className="hover:text-red-500 transition-colors">POLITIKA E PRIVATËSISË</Link>
           <Link href="/admin" className="hover:text-red-500 transition-colors text-slate-500">STAFF LOGIN</Link>
         </div>
       </div>

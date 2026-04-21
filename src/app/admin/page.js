@@ -37,9 +37,9 @@ async function callAI(prompt, maxTokens = 1024) {
 
     const data = await res.json();
     let text = data?.choices?.[0]?.message?.content || '';
-    
+
     console.log('Raw AI Response:', text);
-    
+
     // Safety: strip <think> blocks if they exist anyway
     text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
     return text;
@@ -50,15 +50,15 @@ async function callAI(prompt, maxTokens = 1024) {
 }
 
 export default function AdminPage() {
-  const [title, setTitle]         = useState('');
-  const [content, setContent]     = useState('');
-  const [imageUrl, setImageUrl]   = useState('');
-  const [section, setSection]     = useState('Aktualitet');
-  const [author, setAuthor]       = useState('');
-  const [summary, setSummary]     = useState('');
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [section, setSection] = useState('Aktualitet');
+  const [author, setAuthor] = useState('');
+  const [summary, setSummary] = useState('');
   const [publishedAt, setPublishedAt] = useState('');
-  const [isBreaking, setIsBreaking]   = useState(false);
-  const [loading, setLoading]     = useState(false);
+  const [isBreaking, setIsBreaking] = useState(false);
+  const [loading, setLoading] = useState(false);
   // media_gallery: array of { type: 'image'|'video', url: string, caption: string }
   const [mediaGallery, setMediaGallery] = useState([]);
   const [galleryUploading, setGalleryUploading] = useState(false);
@@ -75,15 +75,15 @@ export default function AdminPage() {
   const [addingChannel, setAddingChannel] = useState(false);
 
   // Comment moderation state
-  const [comments, setComments]             = useState([]);
+  const [comments, setComments] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
-  const [commentsLoaded, setCommentsLoaded]   = useState(false);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
 
-  const [titleLoading, setTitleLoading]     = useState(false);
+  const [titleLoading, setTitleLoading] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [contentLoading, setContentLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
-  const [aiError, setAiError]               = useState('');
+  const [aiError, setAiError] = useState('');
 
   const router = useRouter();
   const SECTIONS = ['Aktualitet', 'Edi Rama', 'Politikë', 'Bota', 'Showbiz', 'Sport', 'Ekonomi', 'Kronikë', 'Teknologji', 'Të Tjera'];
@@ -103,9 +103,12 @@ export default function AdminPage() {
       if (fetchedPosts.length > 0) {
         try {
           const stats = await fetch('/api/views/stats').then(r => r.json());
-          // Build a map from top posts data
-          const map = {};
-          (stats.topPosts || []).forEach(p => { map[p.id] = p.views; });
+          // Use allPostCounts for the full map (covers every post, not just top 10)
+          const map = stats.allPostCounts || {};
+          // Fall back to topPosts if allPostCounts is missing (older API)
+          if (!stats.allPostCounts) {
+            (stats.topPosts || []).forEach(p => { map[p.id] = p.views; });
+          }
           setViewCounts(map);
         } catch { /* ignore */ }
       }
@@ -188,14 +191,14 @@ export default function AdminPage() {
     setAiError('');
     setTitleLoading(true);
     setSummaryLoading(true);
-    
+
     try {
       // Run both in parallel for speed
       const [titleRes, summaryRes] = await Promise.all([
         callAI(`Gjenero VETËM 1 titull shumë viral dhe klikues në gjuhën SHQIPE për këtë tekst. Maksimum 10 fjalë. Pa thonjëza. Ktheje vetëm titullin.\n\nTeksti:\n${content.slice(0, 1500)}`, 50),
         callAI(`Përmblidhe këtë lajm në 2-3 fjali të shkurtra dhe tërheqëse në gjuhën SHQIPE. Ktheje VETËM përmbledhjen.\n\nTeksti:\n${content.slice(0, 3000)}`, 200)
       ]);
-      
+
       setTitle(titleRes.replace(/^["«»"\s]+|["«»"\s]+$/g, '').trim());
       setSummary(summaryRes);
     } catch (err) {
@@ -299,25 +302,25 @@ export default function AdminPage() {
   // ── Handlers for Edit and Delete ──────────────────────────────────────────
   const handleEditClick = async (post) => {
     try {
-       const fullPost = await getPostById(post.id);
-       if (fullPost) {
-         setEditingPostId(fullPost.id);
-         setTitle(fullPost.title || '');
-         setContent(fullPost.content || '');
-         setImageUrl(fullPost.image_url || '');
-         setSection(fullPost.section || 'Aktualitet');
-         setAuthor(fullPost.author || '');
-         setSummary(fullPost.summary || '');
-         // Format date for datetime-local input
-         const dateVal = fullPost.published_at ? new Date(fullPost.published_at).toISOString().slice(0, 16) : '';
-         setPublishedAt(dateVal);
-         setIsBreaking(fullPost.is_breaking || false);
-         setMediaGallery(Array.isArray(fullPost.media_gallery) ? fullPost.media_gallery : []);
-         window.scrollTo({ top: 0, behavior: 'smooth' });
-       }
-    } catch(err) {
-       console.error(err);
-       alert('Gabim gjatë marrjes së detajeve të lajmit');
+      const fullPost = await getPostById(post.id);
+      if (fullPost) {
+        setEditingPostId(fullPost.id);
+        setTitle(fullPost.title || '');
+        setContent(fullPost.content || '');
+        setImageUrl(fullPost.image_url || '');
+        setSection(fullPost.section || 'Aktualitet');
+        setAuthor(fullPost.author || '');
+        setSummary(fullPost.summary || '');
+        // Format date for datetime-local input
+        const dateVal = fullPost.published_at ? new Date(fullPost.published_at).toISOString().slice(0, 16) : '';
+        setPublishedAt(dateVal);
+        setIsBreaking(fullPost.is_breaking || false);
+        setMediaGallery(Array.isArray(fullPost.media_gallery) ? fullPost.media_gallery : []);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Gabim gjatë marrjes së detajeve të lajmit');
     }
   };
 
@@ -344,6 +347,24 @@ export default function AdminPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // Auto-generate SEO summary if the admin left it blank
+    let finalSummary = summary;
+    if (!finalSummary.trim() && content.trim()) {
+      try {
+        setSummaryLoading(true);
+        const prompt = `Përmblidhe këtë lajm në 2-3 fjali të shkurtra dhe tërheqëse në gjuhën SHQIPE. Ktheje VETËM përmbledhjen.\n\nTeksti:\n${content.slice(0, 3000)}`;
+        finalSummary = await callAI(prompt, 200);
+        setSummary(finalSummary);
+      } catch {
+        // Fallback: use first 155 chars of content
+        finalSummary = content.slice(0, 155).trim();
+        setSummary(finalSummary);
+      } finally {
+        setSummaryLoading(false);
+      }
+    }
+
     const formattedPublishedAt = publishedAt ? new Date(publishedAt).toISOString() : undefined;
     try {
       const payload = {
@@ -352,7 +373,7 @@ export default function AdminPage() {
         image_url: imageUrl,
         section,
         author: author || 'Anonim',
-        summary,
+        summary: finalSummary,
         published_at: formattedPublishedAt,
         is_breaking: isBreaking,
         media_gallery: mediaGallery.length > 0 ? mediaGallery : null,
@@ -365,12 +386,12 @@ export default function AdminPage() {
         await addPost(payload);
         alert('Lajmi u publikua me sukses!');
       }
-      
+
       handleCancelEdit(); // clears form
-      
+
       const data = await getPosts();
       setPosts(data || []);
-      
+
       router.refresh();
     } catch (error) {
       alert('Gabim: ' + (error?.message || error?.details || JSON.stringify(error)));
@@ -479,7 +500,7 @@ export default function AdminPage() {
                   🔥 Shëno si Lajm i Fundit
                 </span>
               </div>
-              
+
               {/* Modern iOS-style Toggle Switch */}
               <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ease-in-out ${isBreaking ? 'bg-red-500' : 'bg-slate-300'}`}>
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ease-in-out shadow-sm ${isBreaking ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -507,8 +528,56 @@ export default function AdminPage() {
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               className="w-full p-3 border border-slate-300 rounded-lg h-24 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 placeholder-slate-400 text-sm resize-none"
-              placeholder="Përmbledhje e shkurtër që shfaqet në faqen kryesore…"
+              placeholder="Përmbledhje e shkurtër… (do të gjenerohej automatikisht nga AI nëse lihet bosh)"
             />
+
+            {/* ── SEO Preview Panel ── */}
+            <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-1.5">
+                <span>🔍</span> Pamja në Google (SEO Preview)
+              </p>
+              {/* Simulated search result */}
+              <div className="bg-white rounded-lg border border-slate-100 p-3 shadow-sm">
+                <p className="text-xs text-green-700 mb-1 font-medium truncate">
+                  www.nextshqip.de › lajme › {section.toLowerCase().replace(/\s+/g, '-')}
+                </p>
+                <p className={`text-[16px] font-medium leading-snug mb-1 ${title ? 'text-blue-700' : 'text-slate-300'}`}>
+                  {title
+                    ? (title.length > 60 ? title.slice(0, 60) + '…' : title) + ' | NextShqip'
+                    : 'Titulli i lajmit do të shfaqet këtu…'}
+                </p>
+                <p className={`text-sm leading-relaxed ${summary ? 'text-slate-600' : 'text-slate-300'}`}>
+                  {summary
+                    ? (summary.length > 155 ? summary.slice(0, 155) + '…' : summary)
+                    : 'Përmbledhja do të gjenerohej automatikisht nga AI nëse lihet bosh…'}
+                </p>
+              </div>
+              {/* SEO score badges */}
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  title.length >= 30 && title.length <= 60 ? 'bg-green-100 text-green-700' :
+                  title.length > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-slate-100 text-slate-400'
+                }`}>
+                  Titull: {title.length}/60 {title.length >= 30 && title.length <= 60 ? '✓' : title.length > 60 ? '(shumë gjatë)' : ''}
+                </span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  summary.length >= 100 && summary.length <= 155 ? 'bg-green-100 text-green-700' :
+                  summary.length > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-50 text-blue-500'
+                }`}>
+                  Pershkrim: {summary.length}/155 {!summary.length ? '(auto)' : ''}
+                </span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  imageUrl ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-500'
+                }`}>
+                  {imageUrl ? '✓ Imazh OG' : '✗ Pa imazh'}
+                </span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  content.length >= 300 ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                }`}>
+                  Permbajtja: {content.length} karaktere {content.length >= 300 ? '✓' : '(e shkurtër)'}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* ── PERMBAJTJA ── */}
@@ -593,9 +662,8 @@ export default function AdminPage() {
 
             {/* Upload buttons */}
             <div className="flex flex-wrap gap-3 mb-4">
-              <label className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold cursor-pointer transition-colors border-2 border-dashed ${
-                galleryUploading ? 'opacity-50 cursor-not-allowed border-slate-300 text-slate-400' : 'border-blue-400 text-blue-600 hover:bg-blue-50'
-              }`}>
+              <label className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold cursor-pointer transition-colors border-2 border-dashed ${galleryUploading ? 'opacity-50 cursor-not-allowed border-slate-300 text-slate-400' : 'border-blue-400 text-blue-600 hover:bg-blue-50'
+                }`}>
                 {galleryUploading ? <Spinner /> : '📁'}
                 {galleryUploading ? 'Duke ngarkuar…' : 'Ngarko Foto/Video'}
                 <input
@@ -635,7 +703,7 @@ export default function AdminPage() {
                           src={item.url}
                           alt=""
                           className="w-20 h-16 object-cover rounded-lg border border-slate-200"
-                          onError={e => { e.target.style.display='none'; }}
+                          onError={e => { e.target.style.display = 'none'; }}
                         />
                       ) : (
                         <div className="w-20 h-16 bg-slate-200 rounded-lg flex items-center justify-center text-2xl">🎬</div>
@@ -688,7 +756,7 @@ export default function AdminPage() {
                 </>
               ) : (editingPostId ? '✏️ Ruaj Ndryshimet' : '📰 Publiko Lajmin')}
             </button>
-            
+
             {editingPostId && (
               <button
                 type="button"
@@ -705,7 +773,7 @@ export default function AdminPage() {
         {/* ── EXISTING POSTS LIST ── */}
         <div className="mt-12 bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
           <h2 className="text-xl font-black text-slate-800 uppercase tracking-wide mb-6">Lista e Lajmeve</h2>
-          
+
           {fetchingPosts ? (
             <div className="flex items-center gap-2 text-slate-500">
               <Spinner /> Duke ngarkuar lajmet...
@@ -803,7 +871,7 @@ export default function AdminPage() {
                     const updated = await getLiveChannels();
                     setLiveChannels(updated);
                     setNewChannel({ name: '', youtube_url: '', sort_order: 0 });
-                  } catch(e) { alert('Gabim: ' + e.message); }
+                  } catch (e) { alert('Gabim: ' + e.message); }
                   setAddingChannel(false);
                 }}
                 className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-sm transition-colors disabled:opacity-50"
@@ -829,7 +897,7 @@ export default function AdminPage() {
                       try {
                         await updateLiveChannel(ch.id, { is_active: !ch.is_active });
                         setLiveChannels(prev => prev.map(c => c.id === ch.id ? { ...c, is_active: !c.is_active } : c));
-                      } catch(e) { alert(e.message); }
+                      } catch (e) { alert(e.message); }
                     }}
                   >
                     <span className={`absolute top-1 h-4 w-4 bg-white rounded-full shadow transition-transform duration-200 ${ch.is_active ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -842,7 +910,7 @@ export default function AdminPage() {
                     onBlur={async e => {
                       if (e.target.value.trim() !== ch.name) {
                         try { await updateLiveChannel(ch.id, { name: e.target.value.trim() }); }
-                        catch(err) { alert(err.message); }
+                        catch (err) { alert(err.message); }
                       }
                     }}
                     className="w-32 text-sm font-bold border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
@@ -859,7 +927,7 @@ export default function AdminPage() {
                           await updateLiveChannel(ch.id, { youtube_url: e.target.value });
                           setLiveChannels(prev => prev.map(c => c.id === ch.id ? { ...c, youtube_url: e.target.value } : c));
                           alert(`✅ URL u ruajt për "${ch.name}"!`);
-                        } catch(err) { alert(err.message); }
+                        } catch (err) { alert(err.message); }
                       }
                     }}
                     className="flex-1 text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white font-mono text-slate-600"
@@ -872,7 +940,7 @@ export default function AdminPage() {
                       try {
                         await deleteLiveChannel(ch.id);
                         setLiveChannels(prev => prev.filter(c => c.id !== ch.id));
-                      } catch(e) { alert(e.message); }
+                      } catch (e) { alert(e.message); }
                     }}
                     className="text-red-500 hover:text-red-700 font-bold text-lg flex-shrink-0 transition-colors"
                     title="Fshi kanalin"
@@ -942,11 +1010,10 @@ export default function AdminPage() {
               {comments.map(c => (
                 <div
                   key={c.id}
-                  className={`flex gap-4 p-4 rounded-xl border transition-colors ${
-                    c.approved
+                  className={`flex gap-4 p-4 rounded-xl border transition-colors ${c.approved
                       ? 'border-green-100 bg-green-50/40'
                       : 'border-yellow-100 bg-yellow-50/40'
-                  }`}
+                    }`}
                 >
                   {/* Avatar */}
                   <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white font-black text-base uppercase">

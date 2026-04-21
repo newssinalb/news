@@ -1,0 +1,49 @@
+{
+  "name": "NextShqip — Lajmet e Fundit",
+  "short_name": "NextShqip",
+  "description": "Lajmet më të fundit nga Shqipëria dhe bota",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#e60000",
+  "orientation": "portrait-primary",
+  "lang": "sq",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Lajmet e Fundit",
+      "url": "/?section=Lajmet%20e%20Fundit",
+      "description": "Shiko lajmet e fundit"
+    },
+    {
+      "name": "Sport",
+      "url": "/?section=Sport",
+      "description": "Lajme sportive"
+    },
+    {
+      "name": "Të Ruajtura",
+      "url": "/saved",
+      "description": "Artikujt e ruajtur"
+    }
+  ],
+  "categories": ["news", "politics", "sports"],
+  "screenshots": []
+}

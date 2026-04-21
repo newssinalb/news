@@ -12,6 +12,7 @@ import ShareButtons from '@/components/ShareButtons';
 import BackToTop from '@/components/BackToTop';
 import ViewTracker from '@/components/ViewTracker';
 import CommentsSection from '@/components/CommentsSection';
+import BookmarkButton from '@/components/BookmarkButton';
 
 export const revalidate = 60;
 
@@ -108,8 +109,53 @@ export default async function NewsArticlePage(props) {
   const readMins = readingTimeMin(post.content);
   const articleUrl = `${SITE_URL}/news/${slug}`;
 
+  // ── JSON-LD structured data for Google rich snippets ─────────────
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: post.title,
+    description: post.summary || post.content?.slice(0, 160) || '',
+    datePublished: post.published_at || post.created_at,
+    dateModified: post.published_at || post.created_at,
+    author: {
+      '@type': 'Person',
+      name: post.author || 'NextShqip',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_NAME,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_URL}/favicon.ico`,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': articleUrl,
+    },
+    ...(post.image_url
+      ? {
+          image: {
+            '@type': 'ImageObject',
+            url: post.image_url,
+            width: 1200,
+            height: 630,
+          },
+        }
+      : {}),
+    articleSection: post.section || 'Aktualitet',
+    inLanguage: 'sq',
+    url: articleUrl,
+  };
+
   return (
     <div className="bg-white min-h-screen w-full">
+
+      {/* JSON-LD structured data — read by Google for rich snippets */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       {/* Track this page view — invisible, fire-and-forget */}
       <ViewTracker slug={slug} />
@@ -204,8 +250,14 @@ export default async function NewsArticlePage(props) {
                 ))}
             </article>
 
-            {/* ── Social Share Buttons ── */}
-            <ShareButtons url={articleUrl} title={post.title} />
+            {/* ── Social Share + Bookmark ── */}
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <ShareButtons url={articleUrl} title={post.title} />
+              <BookmarkButton
+                post={post}
+                slug={slug}
+              />
+            </div>
 
             {/* ── Comments Section ── */}
             <CommentsSection postId={post.id} />

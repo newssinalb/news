@@ -101,6 +101,15 @@ export default function Header() {
 
           {/* Search + Dark mode — desktop */}
           <div className="hidden lg:flex items-center gap-2">
+            <Link
+              href="/saved"
+              title="Artikujt e ruajtur"
+              className="p-2 text-slate-500 hover:text-red-600 transition-colors relative"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 3h14a1 1 0 0 1 1 1v16.5l-8-4-8 4V4a1 1 0 0 1 1-1z" />
+              </svg>
+            </Link>
             <SearchOverlay />
             <DarkModeToggle />
           </div>
@@ -196,6 +205,24 @@ export default function Header() {
                   </Link>
                 </li>
               ))}
+              {/* Saved articles link in mobile menu */}
+              <li
+                className={`transform transition-all duration-[600ms] ease-out ${
+                  isMobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'
+                }`}
+                style={{ transitionDelay: `${isMobileMenuOpen ? 150 + (navLinks.length * 40) : 0}ms` }}
+              >
+                <Link
+                  href="/saved"
+                  className="block py-3.5 px-4 text-[14px] font-black tracking-widest text-slate-800 uppercase rounded-xl hover:bg-slate-50 hover:text-red-600 active:bg-slate-100 transition-colors border border-transparent hover:border-slate-100 flex items-center gap-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 3h14a1 1 0 0 1 1 1v16.5l-8-4-8 4V4a1 1 0 0 1 1-1z" />
+                  </svg>
+                  Të Ruajtura
+                </Link>
+              </li>
             </ul>
         </div>
         

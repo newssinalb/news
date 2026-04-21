@@ -2,6 +2,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import SiteViewTracker from "../components/SiteViewTracker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -10,7 +11,7 @@ const geistSans = Geist({
 
 
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://rilindjenews.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.nextshqip.de';
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
@@ -50,8 +51,17 @@ export default function RootLayout({ children }) {
       <head>
         {/* Google Tag Manager — must be first in <head> for best coverage */}
         <script dangerouslySetInnerHTML={{ __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-NXNM5T5L');` }} />
+        {/* Preconnect to external services for faster first requests */}
+        <link rel="preconnect" href="https://erzydvivbvrhixtqihhg.supabase.co" />
+        <link rel="preconnect" href="https://res.cloudinary.com" />
         {/* RSS feed auto-discovery */}
         <link rel="alternate" type="application/rss+xml" title="NextShqip RSS" href="/feed.xml" />
+        {/* PWA manifest — enables "Install app" prompt on mobile & desktop */}
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#e60000" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="NextShqip" />
         {/* Prevent dark mode flash on page load */}
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
@@ -65,6 +75,8 @@ export default function RootLayout({ children }) {
       <body className="min-h-full flex flex-col bg-white overflow-x-hidden relative" suppressHydrationWarning>
         {/* Google Tag Manager (noscript) — must be first inside <body> */}
         <noscript dangerouslySetInnerHTML={{ __html: `<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NXNM5T5L" height="0" width="0" style="display:none;visibility:hidden"></iframe>` }} />
+        {/* Site-wide page view tracker — fires on every navigation */}
+        <SiteViewTracker />
         <Header />
         <div className="flex-1 flex flex-col">
           {children}

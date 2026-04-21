@@ -165,9 +165,9 @@ export default function StatsModal() {
 
               {data && (
                 <>
-                  {/* ── Totals row ── */}
+                  {/* ── Totals row — article views ── */}
                   <div>
-                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Vizita gjithsej</p>
+                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Vizita Artikujsh</p>
                     <div className="flex gap-3">
                       <StatCard label="Sot" value={data.totals?.daily} icon="🌅" active={period === 'daily'} onClick={() => setPeriod('daily')} />
                       <StatCard label="7 Ditë" value={data.totals?.weekly} icon="📅" active={period === 'weekly'} onClick={() => setPeriod('weekly')} />
@@ -175,6 +175,19 @@ export default function StatsModal() {
                       <StatCard label="Gjithsej" value={data.totals?.allTime} icon="🏆" active={false} />
                     </div>
                   </div>
+
+                  {/* ── Totals row — site-wide page views ── */}
+                  {data.pageTotals && (
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">Vizita Gjithë Faqja (ballina, kategori, artikuj)</p>
+                      <div className="flex gap-3">
+                        <StatCard label="Sot" value={data.pageTotals?.daily} icon="🌐" active={false} />
+                        <StatCard label="7 Ditë" value={data.pageTotals?.weekly} icon="📊" active={false} />
+                        <StatCard label="30 Ditë" value={data.pageTotals?.monthly} icon="📈" active={false} />
+                        <StatCard label="Gjithsej" value={data.pageTotals?.allTime} icon="🔢" active={false} />
+                      </div>
+                    </div>
+                  )}
 
                   {/* ── Bar chart: today by hour ── */}
                   {period === 'daily' && (
@@ -226,11 +239,49 @@ export default function StatsModal() {
                     </div>
                   )}
 
-                  {/* ── Top 10 articles ── */}
+                  {/* ── Top 10 most-visited pages ── */}
+                  {data.topPages && data.topPages.length > 0 && (
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">
+                        Top 10 Faqet — 30 ditët e fundit
+                      </p>
+                      <div className="space-y-2">
+                        {data.topPages.map((p, i) => {
+                          const maxViews = data.topPages[0].views;
+                          const pct = Math.round((p.views / maxViews) * 100);
+                          // Make path human readable
+                          let label = p.path;
+                          if (p.path === '/') label = '🏠 Ballina';
+                          else if (p.path.startsWith('/?section=')) label = `📂 ${decodeURIComponent(p.path.replace('/?section=', ''))}`;
+                          else if (p.path.startsWith('/news/')) label = `📰 ${p.path}`;
+                          else if (p.path === '/live') label = '🔴 Live TV';
+                          else if (p.path === '/admin') label = '⚙️ Admin';
+                          return (
+                            <div key={p.path + i} className="flex items-center gap-3">
+                              <span className={`flex-shrink-0 w-6 text-center text-xs font-black ${i === 0 ? 'text-amber-500' : i === 1 ? 'text-slate-400' : i === 2 ? 'text-orange-400' : 'text-slate-300'}`}>
+                                {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-baseline justify-between gap-2 mb-1">
+                                  <span className="text-[12px] font-semibold text-slate-700 truncate" title={p.path}>{label}</span>
+                                  <span className="flex-shrink-0 text-[11px] font-black text-slate-500 tabular-nums">{p.views.toLocaleString()}</span>
+                                </div>
+                                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                  <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Top 20 most-viewed articles ── */}
                   {data.topPosts && data.topPosts.length > 0 && (
                     <div>
                       <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">
-                        Top 10 lajmet — 30 ditët e fundit
+                        Top 20 lajmet — 30 ditët e fundit
                       </p>
                       <div className="space-y-2">
                         {data.topPosts.map((p, i) => {

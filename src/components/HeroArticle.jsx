@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { encodeId } from '@/lib/slug';
 
 export default function HeroArticle({ post, category = "KRYESORE" }) {
@@ -8,11 +9,13 @@ export default function HeroArticle({ post, category = "KRYESORE" }) {
     <Link href={`/news/${encodeId(post.id)}`} className="block relative group overflow-hidden w-full h-[450px] rounded-2xl shadow-sm">
       {/* Background Image */}
       {post.image_url ? (
-        <img 
-          src={post.image_url} 
-          alt={post.title} 
-          fetchPriority="high"
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+        <Image
+          src={post.image_url}
+          alt={post.title}
+          fill
+          priority
+          sizes="(max-width: 1200px) 100vw, 1200px"
+          className="object-cover transition-transform duration-700 group-hover:scale-105"
         />
       ) : (
         <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-500">

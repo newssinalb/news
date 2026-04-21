@@ -1,31 +1,46 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://erzydvivbvrhixtqihhg.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_UQZUeSY7cI15Dxf1BE8sEA_0GcVGp78';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Eğer Supabase ayarları yapılmadıysa uygulamanın çökmesini engellemek için kontrol
 export const supabase = supabaseUrl && supabaseKey 
   ? createClient(supabaseUrl, supabaseKey) 
   : null;
 
-// Tüm haberleri getir
-export async function getPosts() {
+// Fetch posts — optionally filter by section or date in Supabase (faster than JS filtering)
+export async function getPosts({ section, dateFrom, limit = 100 } = {}) {
   if (!supabase) {
-    console.warn('Supabase URL veya Anon Key eksik (.env.local kontrol edin). Sahte veri (boş) dönülüyor.');
+    console.warn('Supabase URL or Anon Key missing (.env.local). Returning empty.');
     return [];
   }
 
-  const { data, error } = await supabase
+  // Build query — filters MUST come before .limit() in Supabase JS v2
+  let query = supabase
     .from('posts')
     .select('id, title, summary, image_url, author, section, is_breaking, created_at, published_at')
     .order('created_at', { ascending: false });
 
+  if (section) {
+    query = query.eq('section', section);
+  }
+  if (dateFrom) {
+    query = query.gte('created_at', dateFrom);
+  }
+
+  // Apply limit last
+  query = query.limit(limit);
+
+  const { data, error } = await query;
+
   if (error) {
-    console.error('Haberler çekilirken hata oluştu:', error);
+    // Log full error details — Supabase errors serialize as {} without this
+    console.error('Error fetching posts:', error.message || error.code || error.details || JSON.stringify(error), { section, dateFrom, limit });
     return [];
   }
-  return data;
+  return data || [];
 }
+
 
 // Tek bir haberi ID ile getir
 export async function getPostById(id) {

@@ -1,6 +1,6 @@
 // ─── Server-side in-memory cache ─────────────────────────────────────────────
 let _cache = null;            // { articles: [...], fetchedAt: number }
-const CACHE_TTL_MS = 60_000;  // 60 seconds
+const CACHE_TTL_MS = 10 * 60_000;  // 10 minutes — world news doesn't change every minute
 
 // ─── Translation helpers ──────────────────────────────────────────────────────
 

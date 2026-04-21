@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { encodeId } from '@/lib/slug';
 
 export default function ArticleCard({ post, category = "AKTUALITET", layout = "vertical" }) {
@@ -23,11 +24,12 @@ export default function ArticleCard({ post, category = "AKTUALITET", layout = "v
         {/* Image */}
         <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 overflow-hidden relative">
           {post.image_url ? (
-            <img 
-              src={post.image_url} 
-              alt={post.title} 
-              loading="lazy"
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            <Image
+              src={post.image_url}
+              alt={post.title}
+              fill
+              sizes="112px"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
             <div className="w-full h-full bg-gray-200" />
@@ -58,14 +60,15 @@ export default function ArticleCard({ post, category = "AKTUALITET", layout = "v
       {/* Image */}
       <div className="w-full aspect-[4/3] overflow-hidden relative mb-3 rounded-lg bg-slate-100">
         {post.image_url ? (
-          <img
+          <Image
             src={post.image_url}
             alt={post.title}
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
-              e.currentTarget.nextElementSibling.style.display = 'flex';
+              e.currentTarget.nextElementSibling?.style && (e.currentTarget.nextElementSibling.style.display = 'flex');
             }}
           />
         ) : null}

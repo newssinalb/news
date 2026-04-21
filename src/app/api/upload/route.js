@@ -16,9 +16,9 @@ export async function POST(request) {
     // Configure Cloudinary explicitly as fallback
     // Note: It's better to use Vercel env, but this ensures it works immediately.
     cloudinary.config({
-      cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'do2bjqxwn',
-      api_key: '173921364845584',
-      api_secret: process.env.CLOUDINARY_SECRET || 'FgePG2yKQOrkgkWRu4Hsc393ud4'
+      cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
     });
 
     // Upload to Cloudinary using a stream
