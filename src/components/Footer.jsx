@@ -64,7 +64,6 @@ export default function Footer() {
         <div className="flex gap-6 mt-4 md:mt-0 uppercase">
           <Link href="#" className="hover:text-red-500 transition-colors">KUSHTET E PËRDORIMIT</Link>
           <Link href="/privacy" className="hover:text-red-500 transition-colors">POLITIKA E PRIVATËSISË</Link>
-          <Link href="/admin" className="hover:text-red-500 transition-colors text-slate-500">STAFF LOGIN</Link>
         </div>
       </div>
     </footer>

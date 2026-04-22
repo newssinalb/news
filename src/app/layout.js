@@ -3,6 +3,8 @@ import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import SiteViewTracker from "../components/SiteViewTracker";
+import AdScripts from "../components/AdScripts";
+import AdUnit from "../components/AdUnit";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -77,9 +79,22 @@ export default function RootLayout({ children }) {
         <noscript dangerouslySetInnerHTML={{ __html: `<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NXNM5T5L" height="0" width="0" style="display:none;visibility:hidden"></iframe>` }} />
         {/* Site-wide page view tracker — fires on every navigation */}
         <SiteViewTracker />
+        {/* Monetisation — ad scripts for ProfitableCPMRateNetwork */}
+        <AdScripts />
         <Header />
         <div className="flex-1 flex flex-col">
           {children}
+        </div>
+        {/* ── Global Bottom Ad (Better integration) ── */}
+        <div className="w-full flex justify-center bg-gray-50 py-4 border-t border-gray-100">
+          <AdUnit 
+            atOptionsKey="aa2d7627ce97b3ad5d2b99333145c853" 
+            format="iframe" 
+            height={60} 
+            width={468} 
+            invokeUrl="https://www.highperformanceformat.com/aa2d7627ce97b3ad5d2b99333145c853/invoke.js" 
+            className="flex items-center justify-center max-w-[1200px] w-full mx-auto"
+          />
         </div>
         <Footer />
       </body>

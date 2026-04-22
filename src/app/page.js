@@ -8,6 +8,8 @@ import CategoryGrid from '@/components/CategoryGrid';
 import BreakingNewsBanner from '@/components/BreakingNewsBanner';
 import TrendingWidget from '@/components/TrendingWidget';
 import NewsletterForm from '@/components/NewsletterForm';
+import AdUnit from '@/components/AdUnit';
+import InPageAd from '@/components/InPageAd';
 
 export const revalidate = 300; // ISR: rebuild page at most every 5 minutes
 
@@ -132,15 +134,36 @@ export default async function Home(props) {
               )}
             </div>
 
+            {/* ── Main Homepage Banner 468x60 ── */}
+            <AdUnit 
+              atOptionsKey="aa2d7627ce97b3ad5d2b99333145c853" 
+              format="iframe" 
+              height={60} 
+              width={468} 
+              invokeUrl="https://www.highperformanceformat.com/aa2d7627ce97b3ad5d2b99333145c853/invoke.js" 
+            />
+
             {/* 🔥 Trending — most read in last 48h */}
             <TrendingWidget />
 
             {/* 📬 Newsletter signup */}
             <NewsletterForm />
 
+            {/* ── Central Main Content Ad ── */}
+            <div className="flex justify-center items-center py-6">
+              <AdUnit 
+                atOptionsKey="7e546183606150b44b2929550ebd0e63" 
+                format="iframe" 
+                height={300} 
+                width={160} 
+                className="flex items-center justify-center p-3 border border-slate-100 rounded-lg bg-slate-50 shadow-sm"
+                invokeUrl="https://www.highperformanceformat.com/7e546183606150b44b2929550ebd0e63/invoke.js" 
+              />
+            </div>
+
             {/* Dynamic Bottom Grid Sections */}
             <div className="flex flex-col gap-12 pt-8 border-t-2 border-slate-100 border-dashed">
-              {SECTIONS.map((sectionName) => {
+              {SECTIONS.map((sectionName, index) => {
                 // For 'Lajmet e Fundit': last 7 days sorted newest→oldest, preview 5; Bota: merged; others: by section
                 const sectionPosts = sectionName === 'Lajmet e Fundit'
                   ? posts
@@ -154,12 +177,24 @@ export default async function Home(props) {
                 if (sectionPosts.length === 0) return null;
 
                 return (
-                  <CategoryGrid
-                    key={sectionName}
-                    title={sectionName}
-                    posts={sectionPosts}
-                    href={`/?section=${encodeURIComponent(sectionName)}`}
-                  />
+                  <div key={sectionName} className="flex flex-col gap-8">
+                    <CategoryGrid
+                      title={sectionName}
+                      posts={sectionPosts}
+                      href={`/?section=${encodeURIComponent(sectionName)}`}
+                    />
+                    {/* Add a native-looking container ad under every 2nd sector */}
+                    {index === 1 && <InPageAd />}
+                    {index === 3 && (
+                       <AdUnit 
+                         atOptionsKey="aa2d7627ce97b3ad5d2b99333145c853" 
+                         format="iframe" 
+                         height={60} 
+                         width={468} 
+                         invokeUrl="https://www.highperformanceformat.com/aa2d7627ce97b3ad5d2b99333145c853/invoke.js" 
+                       />
+                    )}
+                  </div>
                 );
               })}
             </div>

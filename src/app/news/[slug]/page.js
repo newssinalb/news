@@ -13,6 +13,8 @@ import BackToTop from '@/components/BackToTop';
 import ViewTracker from '@/components/ViewTracker';
 import CommentsSection from '@/components/CommentsSection';
 import BookmarkButton from '@/components/BookmarkButton';
+import AdUnit from '@/components/AdUnit';
+import InPageAd from '@/components/InPageAd';
 
 export const revalidate = 60;
 
@@ -225,6 +227,15 @@ export default async function NewsArticlePage(props) {
               </div>
             </div>
 
+            {/* ── Top Article Banner 468x60 ── */}
+            <AdUnit 
+              atOptionsKey="aa2d7627ce97b3ad5d2b99333145c853" 
+              format="iframe" 
+              height={60} 
+              width={468} 
+              invokeUrl="https://www.highperformanceformat.com/aa2d7627ce97b3ad5d2b99333145c853/invoke.js" 
+            />
+
             {/* Featured Image */}
             {post.image_url && (
               <figure className="mb-10 w-full group relative overflow-hidden rounded-xl shadow-md">
@@ -240,13 +251,16 @@ export default async function NewsArticlePage(props) {
             <article className="text-lg md:text-[20px] text-slate-800 leading-[1.85] font-sans tracking-[0.01em] antialiased space-y-7 overflow-hidden">
               {post.content.split('\n')
                 .filter(p => p.trim() !== '')
-                .map((paragraph, index) => (
-                  <p
-                    key={index}
-                    className={index === 0 ? 'first-letter:text-7xl first-letter:font-black first-letter:text-red-600 first-letter:mr-3 first-letter:float-left first-letter:leading-[0.8] first-line:tracking-wide pt-2' : ''}
-                  >
-                    {paragraph}
-                  </p>
+                .map((paragraph, index, arr) => (
+                  <div key={index}>
+                    <p
+                      className={index === 0 ? 'first-letter:text-7xl first-letter:font-black first-letter:text-red-600 first-letter:mr-3 first-letter:float-left first-letter:leading-[0.8] first-line:tracking-wide pt-2' : ''}
+                    >
+                      {paragraph}
+                    </p>
+                    {/* Inject Middle Ad exactly halfway through the text */}
+                    {index === Math.floor(arr.length / 2) && <InPageAd />}
+                  </div>
                 ))}
             </article>
 
@@ -318,8 +332,17 @@ export default async function NewsArticlePage(props) {
                   </h2>
                 </div>
 
+                {/* ── Sidebar Banner 300x160 ── */}
+                <AdUnit 
+                  atOptionsKey="7e546183606150b44b2929550ebd0e63" 
+                  format="iframe" 
+                  height={300} 
+                  width={160} 
+                  invokeUrl="https://www.highperformanceformat.com/7e546183606150b44b2929550ebd0e63/invoke.js" 
+                />
+
                 {/* Post list */}
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-slate-100 mt-6">
                   {relatedPosts.map((relatedPost, idx) => (
                     <div key={`${relatedPost.id}-${idx}`} className="py-3 first:pt-0">
                       <Link
