@@ -29,6 +29,10 @@ export default function AdScripts() {
   const pathname = usePathname();
 
   useEffect(() => {
+    if (pathname?.startsWith('/admin') || pathname?.startsWith('/login')) {
+      return;
+    }
+
     // Helper: inject a <script> tag into <body> (only if not already present)
     function loadScript(src, attrs = {}) {
       const id = 'ad-' + src.replace(/[^a-z0-9]/gi, '').slice(-30);

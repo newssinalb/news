@@ -1,8 +1,10 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function AdUnit({ atOptionsKey, format = 'iframe', height, width, invokeUrl, className = "my-6 flex justify-center w-full overflow-hidden" }) {
   const containerRef = useRef(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     // Only run if the container exists and hasn't been injected into yet
@@ -19,6 +21,10 @@ export default function AdUnit({ atOptionsKey, format = 'iframe', height, width,
     invokeScript.async = true;
     containerRef.current.appendChild(invokeScript);
   }, [atOptionsKey, format, height, width, invokeUrl]);
+
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/login')) {
+    return null;
+  }
 
   return <div ref={containerRef} className={className} />;
 }

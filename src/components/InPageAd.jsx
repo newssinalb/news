@@ -1,7 +1,10 @@
 'use client';
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function InPageAd() {
+  const pathname = usePathname();
+
   useEffect(() => {
     // Only inject if the container exists and hasn't been injected yet
     const container = document.getElementById('container-46f891692b47c26539414760d8438ac5');
@@ -13,6 +16,10 @@ export default function InPageAd() {
     s.setAttribute('data-cfasync', 'false');
     container.appendChild(s);
   }, []);
+
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/login')) {
+    return null;
+  }
 
   return (
     <div 
